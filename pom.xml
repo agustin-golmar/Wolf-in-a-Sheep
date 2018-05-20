@@ -11,6 +11,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Wolf in a Sheep</name>
+	<url>https://github.com/agustin-golmar/Wolf-in-a-Sheep</url>
 
 	<!-- Properties -->
 	<properties>
@@ -21,10 +22,17 @@
 		<maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
 		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
+		<jcommander.version>1.72</jcommander.version>
 	</properties>
 
 	<!-- Dependencies -->
-	<dependencies></dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.beust</groupId>
+			<artifactId>jcommander</artifactId>
+			<version>${jcommander.version}</version>
+		</dependency>
+	</dependencies>
 
 	<!-- Plugins -->
 	<build>
