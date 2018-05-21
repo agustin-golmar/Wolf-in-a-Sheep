@@ -25,4 +25,4 @@ target/
 # Project Specific:
 #
 
-*.bmp
+res/data/*

@@ -60,6 +60,9 @@ This project has been built, designed and maintained by:
 
 ## Bibliography
 
+__"Introduction to Modern Cryptography"__. Jonathan Katz and Yehuda Lindell.
+_1st Edition. CRC Press. 2007_.
+
 __"Efficient Method of Audio Steganography by Modified LSB Algorithm and
 Strong Encryption Key with Enhanced Security"__. R. Sridevi, Dr. A. Damodaram
 and Dr. Svl. Narasimham. _Vol. 5, N° 6, Journal of Theoretical and Applied
@@ -75,7 +78,7 @@ Alberto Espinosa A. and Sandra M. Ocampo C. _Vector, Vol. 1, N° 1, p29-38.
 December 2006_.
 
 __"Esteganografía"__. Dr. Roberto Gómez Cárdenas. _Maestría en Seguridad
-Informática_. ITESM-CEM. Tecnológico de Monterrey.
+Informática. ITESM-CEM. Tecnológico de Monterrey_.
 
 __"Exploring Steganography: Seeing the Unseen"__. Neil F. Johnson and Sushil
 Jajodia. _George Mason University. February, 1998_.

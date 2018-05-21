@@ -5,6 +5,7 @@
 	import com.beust.jcommander.ParameterException;
 
 	import ar.nadezhda.crypt.config.Configuration;
+	import ar.nadezhda.crypt.core.Steganography;
 	import ar.nadezhda.crypt.support.Message;
 
 	public final class Main {
@@ -25,6 +26,7 @@
 			try {
 				cli.parse(arguments);
 				config.validate();
+				Steganography.with(config);
 			}
 			catch (final ParameterException exception) {
 				System.out.println("\n" + exception.getMessage() + ".\n");

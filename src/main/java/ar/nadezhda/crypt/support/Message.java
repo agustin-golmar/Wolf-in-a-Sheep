@@ -37,4 +37,13 @@
 			= "Unknown cipher mode. See usage...";
 		public static final String UNKNOWN_STEGANOGRAPHER_ERROR
 			= "Unknown steganographer. See usage...";
+
+		public static final String CANNOT_OPEN_CARRIER
+			= "Cannot open the carrier file (i.e., the sheep).";
+		public static final String UNKNOWN_SIGNATURE
+			= "Unknown signature. The sheep isn't a bitmap file (BMP v3).";
+		public static final String COMPRESSED_BITMAP
+			= "The sheep (i.e., the bitmap), is compressed. This is unsupported.";
+		public static final String PALETTE_UNSUPPORTED
+			= "Color depth unsupported. The palette should be of 24-bits.";
 	}
