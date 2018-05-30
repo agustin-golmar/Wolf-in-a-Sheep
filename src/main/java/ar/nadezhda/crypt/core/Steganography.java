@@ -11,6 +11,7 @@
 	import ar.nadezhda.crypt.core.pipe.BitmapValidationPipe;
 	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
 	import ar.nadezhda.crypt.core.pipe.OutputPipe;
+	import ar.nadezhda.crypt.core.pipe.WolfPipe;
 
 	public class Steganography {
 
@@ -38,7 +39,7 @@
 			new FileFlow(config.getInputFilename())
 				.injectIn(new MetadataPipe()
 					.plug(config.getEncryptedPipe()))
-				.injectIn(config.getSteganographer().get()
+				.injectIn(config.getSteganographerMerger()
 					.merge(new FileFlow(config.getCarrierFilename())
 				.injectIn(new BitmapPipe()
 					.plug(new BitmapValidationPipe())))
@@ -53,11 +54,12 @@
 			System.out.println("Piping output...");
 			new FileFlow(config.getCarrierFilename())
 				.injectIn(new BitmapPipe()
-				.plug(new BitmapValidationPipe())
-				//.plug(config.getSteganographerPipe())
-				//.plug(new DecryptedPipe())
-				.plug(new OutputPipe<>(config.getOutputFilename())))
-				.flush();
+					.plug(new BitmapValidationPipe())
+					.plug(config.getSteganographerPipe())
+					//.plug(new DecryptedPipe())
+					.plug(new WolfPipe<>())
+					.plug(new OutputPipe<>(config.getOutputFilename())))
+					.flush();
 			System.out.println("Done.");
 		}
 	}

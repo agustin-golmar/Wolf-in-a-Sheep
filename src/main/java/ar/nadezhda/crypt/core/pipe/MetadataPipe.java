@@ -3,6 +3,7 @@
 
 	import java.io.UnsupportedEncodingException;
 	import java.nio.ByteBuffer;
+	import java.nio.ByteOrder;
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
@@ -22,12 +23,11 @@
 			final int index = name.lastIndexOf(".");
 			final String extension = 0 < index? name.substring(index) : "";
 			final ByteBuffer extensionBuffer = ByteBuffer.allocate(1 + extension.length());
-			final ByteBuffer sizeBuffer = ByteBuffer.wrap(new byte [] {
-				(byte) ((size >> 24) & 0xFF),
-				(byte) ((size >> 16) & 0xFF),
-				(byte) ((size >> 8) & 0xFF),
-				(byte) (size & 0xFF)
-			});
+			final ByteBuffer sizeBuffer = ByteBuffer
+					.allocate(4)
+					.order(ByteOrder.BIG_ENDIAN)
+					.putInt((int) size);
+			sizeBuffer.flip();
 			try {
 				extensionBuffer.put(extension.getBytes("UTF-8"))
 					.put((byte) 0)

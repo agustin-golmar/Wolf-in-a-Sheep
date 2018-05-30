@@ -48,6 +48,8 @@
 						throws ExhaustedFlowException {
 					flow.consume((k, p) -> {
 						if (k < BitmapFlow.HEADER_SIZE) {
+							// Se debería poder ignorar cierta parte (pero
+							// dejar que pase), en lugar de hacer esto...
 							drainer.drain(k, p);
 							return;
 						}
@@ -80,18 +82,35 @@
 				public boolean isExhausted() {
 					return flow.isExhausted();
 				}
+
+				@Override
+				public String toString() {
+					return "";
+				}
 			};
 		}
 
 		@Override
-		public RegisteredFlow inject(final Flow flow)
+		public RegisteredFlow inject(final BitmapFlow flow)
 				throws PipelineBrokenException {
 			return new RegisteredFlow() {
+
+				// Effectively-final hack:
+				protected final byte [] target = {0};
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
-					flow.consume(drainer);
+					flow.consume((k, p) -> {
+						if (k < BitmapFlow.HEADER_SIZE) return;
+						final long shift = (k - BitmapFlow.HEADER_SIZE) % HIDING_FACTOR;
+						target[0] |= (p & HIDING_MASK) << (shift * SHIFT_FACTOR);
+						if (HIDING_FACTOR - shift == 1) {
+							final long ku = (k - BitmapFlow.HEADER_SIZE) / HIDING_FACTOR;
+							drainer.drain(ku, target[0]);
+							target[0] = 0;
+						}
+					});
 				}
 
 				@Override
@@ -99,9 +118,15 @@
 					return flow.isExhausted();
 				}
 
+				/*
+				 * Quizás haya que cambiar los tipos de este Pipelinable...
+				 *
+				 * 			Hacen falta estos métodos?
+				 */
+
 				@Override
 				public long getSize() {
-					/**/return 0;
+					/**/return flow.getSize();
 				}
 
 				@Override

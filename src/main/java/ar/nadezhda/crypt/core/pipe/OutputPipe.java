@@ -5,7 +5,9 @@
 	import java.nio.ByteBuffer;
 	import java.nio.channels.FileChannel;
 	import java.nio.file.FileSystemException;
+	import java.nio.file.Files;
 	import java.nio.file.Paths;
+	import java.nio.file.StandardCopyOption;
 	import java.nio.file.StandardOpenOption;
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
@@ -75,6 +77,18 @@
 					public void flush()
 							throws ExhaustedFlowException {
 						consume((k, payload) -> {});
+						try {
+							Files.move(
+								Paths.get(filename),
+								Paths.get(filename + flow.toString()),
+								StandardCopyOption.REPLACE_EXISTING);
+						}
+						catch (final IOException exception) {
+							exception.printStackTrace();
+							throw new ExhaustedFlowException(
+								"No se puede generar el archivo de salida con la extensión original ('"
+								+ flow.toString() + "')");
+						}
 					}
 				};
 			}

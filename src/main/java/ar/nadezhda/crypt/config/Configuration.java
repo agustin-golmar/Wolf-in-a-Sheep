@@ -10,13 +10,15 @@
 	import ar.nadezhda.crypt.factory.CipherFactory;
 	import ar.nadezhda.crypt.factory.CipherModeFactory;
 	import ar.nadezhda.crypt.factory.SteganographerFactory;
+	import ar.nadezhda.crypt.interfaces.BitmapFlow;
 	import ar.nadezhda.crypt.interfaces.BoundedFlow;
 	import ar.nadezhda.crypt.interfaces.Cipher;
 	import ar.nadezhda.crypt.interfaces.CipherMode;
 	import ar.nadezhda.crypt.interfaces.Flow;
+	import ar.nadezhda.crypt.interfaces.Mergeable;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
-import ar.nadezhda.crypt.interfaces.RegisteredFlow;
-import ar.nadezhda.crypt.interfaces.Steganographer;
+	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.interfaces.Steganographer;
 	import ar.nadezhda.crypt.support.Message;
 
 	public class Configuration {
@@ -151,7 +153,11 @@ import ar.nadezhda.crypt.interfaces.Steganographer;
 			return password;
 		}
 
-		public Pipelinable<Flow, RegisteredFlow> getSteganographerPipe() {
+		public Mergeable<Flow, Flow, Flow> getSteganographerMerger() {
+			return steganographer.get();
+		}
+
+		public Pipelinable<BitmapFlow, RegisteredFlow> getSteganographerPipe() {
 			return steganographer.get();
 		}
 

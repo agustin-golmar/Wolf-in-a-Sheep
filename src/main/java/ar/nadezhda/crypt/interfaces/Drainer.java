@@ -18,9 +18,10 @@
 		*
 		* @param k
 		*	La posición del byte consumido dentro del flujo. Esta posición
-		*	debe ser relativa al flujo y no a la fuente de la cual se extrae,
+		*	debe ser absoluta al flujo y no a la fuente de la cual se extrae,
 		*	es decir, el primer byte consumido siempre se corresponde con
-		*	<i>k = 0</i>.
+		*	<i>k = 0</i>, y los sucesivos flujos reflejan el mismo límite
+		*	inferior, a menos que el flujo sea reducido (o expandido).
 		* @param payload
 		*	El siguiente byte del flujo.
 		*
