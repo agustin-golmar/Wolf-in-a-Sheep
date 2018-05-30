@@ -6,12 +6,17 @@
 	import com.beust.jcommander.Parameter;
 	import com.beust.jcommander.ParameterException;
 
+	import ar.nadezhda.crypt.core.pipe.IdentityPipe;
 	import ar.nadezhda.crypt.factory.CipherFactory;
 	import ar.nadezhda.crypt.factory.CipherModeFactory;
 	import ar.nadezhda.crypt.factory.SteganographerFactory;
+	import ar.nadezhda.crypt.interfaces.BoundedFlow;
 	import ar.nadezhda.crypt.interfaces.Cipher;
 	import ar.nadezhda.crypt.interfaces.CipherMode;
-	import ar.nadezhda.crypt.interfaces.Steganographer;
+	import ar.nadezhda.crypt.interfaces.Flow;
+	import ar.nadezhda.crypt.interfaces.Pipelinable;
+import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+import ar.nadezhda.crypt.interfaces.Steganographer;
 	import ar.nadezhda.crypt.support.Message;
 
 	public class Configuration {
@@ -101,6 +106,8 @@
 				throw new ParameterException(Message.INPUT_NEEDED_ERROR);
 			if (!cipher.isPresent())
 				throw new ParameterException(Message.UNKNOWN_CIPHER_ERROR);
+			if (cipher.isPresent() && password != null && password.isEmpty())
+				throw new ParameterException(Message.EMPTY_PASSWORD);
 			if (!mode.isPresent())
 				throw new ParameterException(Message.UNKNOWN_MODE_ERROR);
 			if (!steganographer.isPresent())
@@ -142,5 +149,14 @@
 
 		public String getPassword() {
 			return password;
+		}
+
+		public Pipelinable<Flow, RegisteredFlow> getSteganographerPipe() {
+			return steganographer.get();
+		}
+
+		public Pipelinable<BoundedFlow, Flow> getEncryptedPipe() {
+			return password == null || password.isEmpty()?
+					new IdentityPipe<BoundedFlow>() : getCipher().get();
 		}
 	}

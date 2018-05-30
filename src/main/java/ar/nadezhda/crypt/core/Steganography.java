@@ -4,43 +4,60 @@
 	import java.io.IOException;
 
 	import ar.nadezhda.crypt.config.Configuration;
-	import ar.nadezhda.crypt.core.exception.UnsupportedFormat;
-	import ar.nadezhda.crypt.support.Message;
+	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
+	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
+	import ar.nadezhda.crypt.core.flow.FileFlow;
+	import ar.nadezhda.crypt.core.pipe.BitmapPipe;
+	import ar.nadezhda.crypt.core.pipe.BitmapValidationPipe;
+	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
+	import ar.nadezhda.crypt.core.pipe.OutputPipe;
 
 	public class Steganography {
 
-		public Steganography() {
-			/*
-				[DONE] Leer el portador y validar que sea BMP v3 sin compresión.
-					<Depende si es -embed o -extract>
-				Validar que entre en el archivo (con/sin encripción).
-				Leer el wolf.
-				Pasarlo al algoritmo LSB y obtener el buffer de salida.
-				Escribir el buffer al archivo final.
-			*/
-		}
-
 		public static void with(final Configuration config) {
 			try {
-				final Bitmap carrier = Bitmap.from(config.getCarrierFilename());
-				validate(carrier);
-				System.out.println("\nSheep Properties:\n" + carrier);
+				if (config.isEmbed()) {
+					embed(config);
+				}
+				else {
+					extract(config);
+				}
 			}
-			catch (final IOException exception) {
-				System.out.println(Message.CANNOT_OPEN_CARRIER);
-			}
-			catch (final UnsupportedFormat exception) {
-				System.out.println("\n" + exception.getMessage() + "\n");
+			catch (final PipelineBrokenException
+					| IOException
+					| ExhaustedFlowException exception) {
+				System.out.println(exception.getMessage());
+				exception.printStackTrace();
 			}
 		}
 
-		protected static void validate(final Bitmap carrier)
-				throws UnsupportedFormat {
-			if (!carrier.getFileType().equals(Bitmap.SIGNATURE))
-				throw new UnsupportedFormat(Message.UNKNOWN_SIGNATURE);
-			if (carrier.isCompressed())
-				throw new UnsupportedFormat(Message.COMPRESSED_BITMAP);
-			if (carrier.getBits() != 24)
-				throw new UnsupportedFormat(Message.PALETTE_UNSUPPORTED);
+		protected static void embed(final Configuration config)
+				throws PipelineBrokenException, IOException, ExhaustedFlowException {
+
+			System.out.println("Piping output...");
+			new FileFlow(config.getInputFilename())
+				.injectIn(new MetadataPipe()
+					.plug(config.getEncryptedPipe()))
+				.injectIn(config.getSteganographer().get()
+					.merge(new FileFlow(config.getCarrierFilename())
+				.injectIn(new BitmapPipe()
+					.plug(new BitmapValidationPipe())))
+					.plug(new OutputPipe<>(config.getOutputFilename())))
+					.flush();
+			System.out.println("Done.");
+		}
+
+		protected static void extract(final Configuration config)
+				throws PipelineBrokenException, IOException, ExhaustedFlowException {
+
+			System.out.println("Piping output...");
+			new FileFlow(config.getCarrierFilename())
+				.injectIn(new BitmapPipe()
+				.plug(new BitmapValidationPipe())
+				//.plug(config.getSteganographerPipe())
+				//.plug(new DecryptedPipe())
+				.plug(new OutputPipe<>(config.getOutputFilename())))
+				.flush();
+			System.out.println("Done.");
 		}
 	}

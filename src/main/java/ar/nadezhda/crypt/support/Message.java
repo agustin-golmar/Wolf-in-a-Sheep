@@ -33,6 +33,8 @@
 			= "The following option is required: [-in]";
 		public static final String UNKNOWN_CIPHER_ERROR
 			= "Unknown cipher. See usage...";
+		public static final String EMPTY_PASSWORD
+			= "Cannot use the cipher, because you don't provide a password.";
 		public static final String UNKNOWN_MODE_ERROR
 			= "Unknown cipher mode. See usage...";
 		public static final String UNKNOWN_STEGANOGRAPHER_ERROR
@@ -46,4 +48,8 @@
 			= "The sheep (i.e., the bitmap), is compressed. This is unsupported.";
 		public static final String PALETTE_UNSUPPORTED
 			= "Color depth unsupported. The palette should be of 24-bits.";
+		public static final String CANNOT_OPEN_INPUT
+			= "Cannot open the wolf file.";
+		public static final String CANNOT_WRITE_OUTPUT
+			= "Cannot create the Final Sheep (i.e., the output file).";
 	}

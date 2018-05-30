@@ -1,17 +1,15 @@
 
-	package ar.nadezhda.crypt.cipher;
+	package ar.nadezhda.crypt.core.pipe;
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
 	import ar.nadezhda.crypt.interfaces.BoundedFlow;
-	import ar.nadezhda.crypt.interfaces.Cipher;
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Flow;
+	import ar.nadezhda.crypt.interfaces.Pipelinable;
 
-	public class AES128 implements Cipher {
-
-		public AES128() {
-		}
+	public class EncryptedPipe
+		implements Pipelinable<BoundedFlow, Flow> {
 
 		@Override
 		public Flow inject(final BoundedFlow flow)

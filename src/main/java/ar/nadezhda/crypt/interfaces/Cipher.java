@@ -1,5 +1,6 @@
 
 	package ar.nadezhda.crypt.interfaces;
 
-	public interface Cipher {
+	public interface Cipher
+		extends Pipelinable<BoundedFlow, Flow> {
 	}

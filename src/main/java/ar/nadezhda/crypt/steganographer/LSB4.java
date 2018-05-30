@@ -1,10 +1,9 @@
 
 	package ar.nadezhda.crypt.steganographer;
 
-	import ar.nadezhda.crypt.interfaces.Steganographer;
-
-	public class LSB4 implements Steganographer {
+	public class LSB4 extends LSB {
 
 		public LSB4() {
+			super(2, 0x0F);
 		}
 	}
