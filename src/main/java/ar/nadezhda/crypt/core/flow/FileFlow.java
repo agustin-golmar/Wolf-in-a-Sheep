@@ -57,7 +57,7 @@
 			}
 			catch (final IOException exception) {
 				throw new ExhaustedFlowException(
-					"Error al leer del archivo de entrada ('" + filename + "').");
+					"Error reading from the input file ('" + filename + "').");
 			}
 		}
 

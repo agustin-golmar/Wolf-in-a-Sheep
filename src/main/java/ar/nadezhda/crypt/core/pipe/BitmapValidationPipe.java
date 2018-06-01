@@ -14,6 +14,7 @@
 				throws PipelineBrokenException {
 			if (!flow.getSignature().equals(BitmapFlow.SIGNATURE))
 				throw new PipelineBrokenException(Message.UNKNOWN_SIGNATURE);
+			System.out.println("Sheep Properties: \n" + flow + "\n");
 			if (flow.isCompressed())
 				throw new PipelineBrokenException(Message.COMPRESSED_BITMAP);
 			if (flow.getBits() != 24)

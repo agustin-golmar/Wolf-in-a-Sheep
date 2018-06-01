@@ -10,13 +10,15 @@
 
 	public class AES128 implements Cipher {
 
-		public AES128() {
-		}
-
 		@Override
 		public Flow inject(final BoundedFlow flow)
 				throws PipelineBrokenException {
 			return new Flow() {
+
+				/*
+				 * Necesita que sea Bounded para extraer el tamaño final,
+				 * y así agregarlo al principio del flujo.
+				 */
 
 				@Override
 				public void consume(final Drainer drainer)

@@ -1,9 +1,9 @@
 
 	package ar.nadezhda.crypt.core.exception;
 
-	public class UnavailableFlowException extends Exception {
+	public class NonMergeableFlowException extends Exception {
 
-		public UnavailableFlowException(final String message) {
+		public NonMergeableFlowException(final String message) {
 			super(message);
 		}
 

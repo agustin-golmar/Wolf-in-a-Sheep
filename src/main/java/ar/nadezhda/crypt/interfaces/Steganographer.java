@@ -4,12 +4,12 @@
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
 
 	public interface Steganographer
-		extends Mergeable<Flow, Flow, Flow>, Pipelinable<BitmapFlow, RegisteredFlow> {
+		extends Mergeable<BoundedFlow, BoundedFlow, Flow>, Pipelinable<BitmapFlow, RegisteredFlow> {
 
 		public long bytesNeededFor(final BoundedFlow payload);
 		public long availableSpace(final BoundedFlow carrier);
 
-		public default Flow hide(final Flow payload, final Flow carrier)
+		public default Flow hide(final BoundedFlow payload, final BoundedFlow carrier)
 				throws PipelineBrokenException {
 			return merge(carrier).inject(payload);
 		}

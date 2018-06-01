@@ -153,7 +153,7 @@
 			return password;
 		}
 
-		public Mergeable<Flow, Flow, Flow> getSteganographerMerger() {
+		public Mergeable<BoundedFlow, BoundedFlow, Flow> getSteganographerMerger() {
 			return steganographer.get();
 		}
 

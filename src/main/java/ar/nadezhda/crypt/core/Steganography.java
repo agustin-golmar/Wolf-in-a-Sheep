@@ -2,6 +2,7 @@
 	package ar.nadezhda.crypt.core;
 
 	import java.io.IOException;
+	import java.nio.file.NoSuchFileException;
 
 	import ar.nadezhda.crypt.config.Configuration;
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
@@ -12,6 +13,7 @@
 	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
 	import ar.nadezhda.crypt.core.pipe.OutputPipe;
 	import ar.nadezhda.crypt.core.pipe.WolfPipe;
+	import ar.nadezhda.crypt.support.Message;
 
 	public class Steganography {
 
@@ -23,6 +25,11 @@
 				else {
 					extract(config);
 				}
+			}
+			catch (final NoSuchFileException exception) {
+				System.out.println(
+					Message.CANNOT_OPEN_FINAL_SHEEP(
+						exception.getMessage()));
 			}
 			catch (final PipelineBrokenException
 					| IOException
@@ -38,7 +45,7 @@
 			System.out.println("Piping output...");
 			new FileFlow(config.getInputFilename())
 				.injectIn(new MetadataPipe()
-					.plug(config.getEncryptedPipe()))
+					.plug(config.getEncryptedPipe())) // Completar!
 				.injectIn(config.getSteganographerMerger()
 					.merge(new FileFlow(config.getCarrierFilename())
 				.injectIn(new BitmapPipe()

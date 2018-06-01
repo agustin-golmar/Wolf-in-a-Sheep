@@ -11,6 +11,7 @@
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.support.Message;
 
 	public class MetadataPipe
 		implements Pipelinable<RegisteredFlow, BoundedFlow> {
@@ -36,7 +37,7 @@
 			catch (final UnsupportedEncodingException exception) {
 				exception.printStackTrace();
 				throw new PipelineBrokenException(
-					"No se pudo codificar la extensión en UTF-8 (" + extension + ").");
+					Message.CANNOT_ENCODE_EXTENSION(extension));
 			}
 			return new BoundedFlow() {
 

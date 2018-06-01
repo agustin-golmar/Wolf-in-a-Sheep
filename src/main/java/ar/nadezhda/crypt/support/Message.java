@@ -52,4 +52,41 @@
 			= "Cannot open the wolf file.";
 		public static final String CANNOT_WRITE_OUTPUT
 			= "Cannot create the Final Sheep (i.e., the output file).";
+
+		public static final String UNSUPPORTED_BITMAP_FORMAT
+			= "The sheep is not in BMP v3 format.";
+
+		public static String SHEEP_OVERFLOW_ERROR(
+				final long availableSpace, final long bytesNeeded) {
+			return "Cannot hide the wolf in the sheep. The wolf is too big.\n" +
+				"The sheep supports " + availableSpace + " bytes, but the wolf requires " +
+				bytesNeeded + " bytes.";
+		}
+
+		public static String EXHAUSTED_FLOW_EXCEPTION(final String message) {
+			return "Error consuming the input flow ('" + message + "').";
+		}
+
+		public static String CANNOT_ENCODE_EXTENSION(final String extension) {
+			return "The extension could not be encoded in UTF-8 ('" + extension + "').";
+		}
+
+		public static String CANNOT_GENERATE_FILE_WITH_EXTENSION(
+				final String extension) {
+			return "Unable to generate the output file with the original extension ('"
+				+ extension + "')";
+		}
+
+		public static String FILE_IN_USE(final String filename) {
+			return "The destination file is in use ('" + filename + "').";
+		}
+
+		public static String UNKNOWN_OUTPUT_ERROR(final String filename) {
+			return "Unexpected error when generating the output file ('"
+				+ filename + "').";
+		}
+
+		public static String CANNOT_OPEN_FINAL_SHEEP(final String filename) {
+			return "Cannot open the Final Sheep file ('" + filename + "').";
+		}
 	}

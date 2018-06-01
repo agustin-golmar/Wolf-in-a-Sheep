@@ -9,6 +9,7 @@
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Flow;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
+	import ar.nadezhda.crypt.support.Message;
 
 	public class BitmapPipe
 		implements Pipelinable<Flow, BitmapFlow> {
@@ -26,7 +27,7 @@
 			}
 			catch (final ExhaustedFlowException exception) {
 				throw new PipelineBrokenException(
-					"El archivo portador no se encuentra en formato BMP v3.");
+					Message.UNSUPPORTED_BITMAP_FORMAT);
 			}
 			return new BitmapFlow() {
 

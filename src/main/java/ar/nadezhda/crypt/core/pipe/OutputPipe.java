@@ -6,6 +6,7 @@
 	import java.nio.channels.FileChannel;
 	import java.nio.file.FileSystemException;
 	import java.nio.file.Files;
+	import java.nio.file.Path;
 	import java.nio.file.Paths;
 	import java.nio.file.StandardCopyOption;
 	import java.nio.file.StandardOpenOption;
@@ -17,6 +18,7 @@
 	import ar.nadezhda.crypt.interfaces.Flow;
 	import ar.nadezhda.crypt.interfaces.FlushableFlow;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
+	import ar.nadezhda.crypt.support.Message;
 
 	public class OutputPipe<T extends Flow>
 		implements Pipelinable<T, FlushableFlow> {
@@ -78,27 +80,33 @@
 							throws ExhaustedFlowException {
 						consume((k, payload) -> {});
 						try {
-							Files.move(
-								Paths.get(filename),
-								Paths.get(filename + flow.toString()),
-								StandardCopyOption.REPLACE_EXISTING);
+							final Path output = Paths.get(filename);
+							if (Files.size(output) == 0) {
+								Files.deleteIfExists(output);
+							}
+							else {
+								Files.move(
+									output,
+									Paths.get(filename + flow.toString()),
+									StandardCopyOption.REPLACE_EXISTING);
+							}
 						}
 						catch (final IOException exception) {
 							exception.printStackTrace();
 							throw new ExhaustedFlowException(
-								"No se puede generar el archivo de salida con la extensión original ('"
-								+ flow.toString() + "')");
+								Message.CANNOT_GENERATE_FILE_WITH_EXTENSION(
+									flow.toString()));
 						}
 					}
 				};
 			}
 			catch (final FileSystemException exception) {
 				throw new PipelineBrokenException(
-					"El archivo destino está en uso ('" + filename + "').");
+					Message.FILE_IN_USE(filename));
 			}
 			catch (final IOException exception) {
 				throw new PipelineBrokenException(
-					"Error inesperado al generar el archivo de salida ('" + filename + "').");
+					Message.UNKNOWN_OUTPUT_ERROR(filename));
 			}
 		}
 	}
