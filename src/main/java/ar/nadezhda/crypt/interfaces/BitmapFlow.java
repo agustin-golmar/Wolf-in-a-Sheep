@@ -1,7 +1,7 @@
 
 	package ar.nadezhda.crypt.interfaces;
 
-	public interface BitmapFlow extends BoundedFlow {
+	public interface BitmapFlow extends RegisteredFlow {
 
 		public static final String SIGNATURE = "BM";
 		public static final int HEADER_SIZE = 54;

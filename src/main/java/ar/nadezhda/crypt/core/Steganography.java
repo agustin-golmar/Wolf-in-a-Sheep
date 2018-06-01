@@ -10,14 +10,17 @@
 	import ar.nadezhda.crypt.core.flow.FileFlow;
 	import ar.nadezhda.crypt.core.pipe.BitmapPipe;
 	import ar.nadezhda.crypt.core.pipe.BitmapValidationPipe;
-	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
+import ar.nadezhda.crypt.core.pipe.DecryptedPipe;
+import ar.nadezhda.crypt.core.pipe.MetadataPipe;
 	import ar.nadezhda.crypt.core.pipe.OutputPipe;
 	import ar.nadezhda.crypt.core.pipe.WolfPipe;
 	import ar.nadezhda.crypt.support.Message;
+	import ar.nadezhda.crypt.support.Timer;
 
 	public class Steganography {
 
 		public static void with(final Configuration config) {
+			final Timer timer = Timer.start();
 			try {
 				if (config.isEmbed()) {
 					embed(config);
@@ -37,6 +40,8 @@
 				System.out.println(exception.getMessage());
 				exception.printStackTrace();
 			}
+			System.out.println(
+				Message.FINISH_TIME(timer.getTimeInSeconds()));
 		}
 
 		protected static void embed(final Configuration config)
@@ -44,12 +49,12 @@
 
 			System.out.println("Piping output...");
 			new FileFlow(config.getInputFilename())
-				.injectIn(new MetadataPipe()
-					.plug(config.getEncryptedPipe())) // Completar!
+				.injectIn(new MetadataPipe<>()
+					.plug(config.getEncryptedPipe()))
 				.injectIn(config.getSteganographerMerger()
 					.merge(new FileFlow(config.getCarrierFilename())
-				.injectIn(new BitmapPipe()
-					.plug(new BitmapValidationPipe())))
+				.injectIn(new BitmapPipe<>()
+					.plug(new BitmapValidationPipe<>())))
 					.plug(new OutputPipe<>(config.getOutputFilename())))
 					.flush();
 			System.out.println("Done.");
@@ -60,10 +65,10 @@
 
 			System.out.println("Piping output...");
 			new FileFlow(config.getCarrierFilename())
-				.injectIn(new BitmapPipe()
-					.plug(new BitmapValidationPipe())
+				.injectIn(new BitmapPipe<>()
+					.plug(new BitmapValidationPipe<>())
 					.plug(config.getSteganographerPipe())
-					//.plug(new DecryptedPipe())
+					.plug(new DecryptedPipe<>())
 					.plug(new WolfPipe<>())
 					.plug(new OutputPipe<>(config.getOutputFilename())))
 					.flush();

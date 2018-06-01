@@ -7,15 +7,15 @@
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
 	import ar.nadezhda.crypt.interfaces.BitmapFlow;
 	import ar.nadezhda.crypt.interfaces.Drainer;
-	import ar.nadezhda.crypt.interfaces.Flow;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
+	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
 	import ar.nadezhda.crypt.support.Message;
 
-	public class BitmapPipe
-		implements Pipelinable<Flow, BitmapFlow> {
+	public class BitmapPipe<T extends RegisteredFlow>
+		implements Pipelinable<T, BitmapFlow> {
 
 		@Override
-		public BitmapFlow inject(final Flow flow)
+		public BitmapFlow inject(final T flow)
 				throws PipelineBrokenException {
 			final ByteBuffer header = ByteBuffer.allocate(BitmapFlow.HEADER_SIZE);
 			final ByteBuffer headerView = header.slice();
@@ -103,6 +103,11 @@
 							.append(getRowPaddingInBytes())
 							.append(" bytes")
 							.toString();
+				}
+
+				@Override
+				public String getName() {
+					return flow.getName();
 				}
 			};
 		}

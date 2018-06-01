@@ -8,11 +8,11 @@
 	import ar.nadezhda.crypt.interfaces.Flow;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 
-	public class EncryptedPipe
-		implements Pipelinable<BoundedFlow, Flow> {
+	public class EncryptedPipe<T extends BoundedFlow>
+		implements Pipelinable<T, Flow> {
 
 		@Override
-		public Flow inject(final BoundedFlow flow)
+		public Flow inject(final T flow)
 				throws PipelineBrokenException {
 			return new Flow() {
 

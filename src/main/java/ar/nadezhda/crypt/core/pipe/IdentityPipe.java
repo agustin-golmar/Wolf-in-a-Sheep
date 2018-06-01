@@ -6,10 +6,10 @@
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 
 	public class IdentityPipe<T extends Flow>
-		implements Pipelinable<T, Flow> {
+		implements Pipelinable<T, T> {
 
 		@Override
-		public Flow inject(final T flow)
+		public T inject(final T flow)
 				throws PipelineBrokenException {
 			return flow;
 		}

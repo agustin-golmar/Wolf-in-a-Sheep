@@ -153,7 +153,7 @@
 			return password;
 		}
 
-		public Mergeable<BoundedFlow, BoundedFlow, Flow> getSteganographerMerger() {
+		public Mergeable<RegisteredFlow, BoundedFlow, Flow> getSteganographerMerger() {
 			return steganographer.get();
 		}
 
@@ -161,8 +161,8 @@
 			return steganographer.get();
 		}
 
-		public Pipelinable<BoundedFlow, Flow> getEncryptedPipe() {
+		public Pipelinable<RegisteredFlow, RegisteredFlow> getEncryptedPipe() {
 			return password == null || password.isEmpty()?
-					new IdentityPipe<BoundedFlow>() : getCipher().get();
+					new IdentityPipe<RegisteredFlow>() : getCipher().get();
 		}
 	}

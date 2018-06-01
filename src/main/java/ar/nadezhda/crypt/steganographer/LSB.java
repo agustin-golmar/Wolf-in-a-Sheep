@@ -1,6 +1,8 @@
 
 	package ar.nadezhda.crypt.steganographer;
 
+	import java.util.function.Predicate;
+
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.NonMergeableFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
@@ -16,6 +18,7 @@
 
 	public class LSB implements Steganographer {
 
+		protected final Predicate<Byte> filter;
 		protected final int HIDING_FACTOR;
 		protected final int SHIFT_FACTOR;
 		protected final int MAX_SHIFT;
@@ -23,6 +26,13 @@
 		protected final int MASK;
 
 		public LSB(final int hidingFactor, final int hidingMask) {
+			this(hidingFactor, hidingMask, payload -> true);
+		}
+
+		public LSB(
+				final int hidingFactor, final int hidingMask,
+				final Predicate<Byte> filter) {
+			this.filter = filter;
 			this.HIDING_FACTOR = hidingFactor;
 			this.SHIFT_FACTOR = 8 / hidingFactor;
 			this.MAX_SHIFT = 8 - SHIFT_FACTOR;
@@ -36,12 +46,12 @@
 		}
 
 		@Override
-		public long availableSpace(final BoundedFlow carrier) {
+		public long availableSpace(final RegisteredFlow carrier) {
 			return (carrier.getSize() - BitmapFlow.HEADER_SIZE) / HIDING_FACTOR;
 		}
 
 		@Override
-		public Pipelinable<BoundedFlow, Flow> merge(final BoundedFlow flow) {
+		public Pipelinable<BoundedFlow, Flow> merge(final RegisteredFlow flow) {
 			return payload -> {
 				try {
 					return new MergedFlow(payload, flow);
@@ -58,11 +68,12 @@
 			// Effectively-final hack:
 			protected final byte [] target = {0};
 			protected final int [] remain = {HIDING_FACTOR - 1};
+			protected final long [] ek = {0};
 
 			protected final Flow payload;
 			protected final BoundedFlow carrier;
 
-			public MergedFlow(final BoundedFlow payload, final BoundedFlow carrier)
+			public MergedFlow(final BoundedFlow payload, final RegisteredFlow carrier)
 					throws NonMergeableFlowException {
 				this.payload = payload;
 				this.carrier = carrier;
@@ -77,13 +88,13 @@
 			public void consume(final Drainer drainer)
 					throws ExhaustedFlowException {
 				carrier.consume((k, p) -> {
-					if (k < BitmapFlow.HEADER_SIZE) {
+					if (!filter.test(p) || k < BitmapFlow.HEADER_SIZE) {
 						// Se debería poder ignorar cierta parte (pero
 						// dejar que pase), en lugar de hacer esto...
 						drainer.drain(k, p);
 						return;
 					}
-					final long shift = (k - BitmapFlow.HEADER_SIZE) % HIDING_FACTOR;
+					final long shift = ek[0] % HIDING_FACTOR;
 					final boolean exhausted = payload.isExhausted();
 					if (shift == 0) {
 						if (!exhausted) {
@@ -105,6 +116,7 @@
 						final byte hiding = (byte) (target[0] >> (MAX_SHIFT - shift * SHIFT_FACTOR));
 						drainer.drain(k, (byte) ((p & MASK) | (hiding & HIDING_MASK)));
 					}
+					++ek[0];
 				});
 			}
 
@@ -126,19 +138,21 @@
 
 				// Effectively-final hack:
 				protected final byte [] target = {0};
+				protected final long [] ek = {0};
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
 					flow.consume((k, p) -> {
-						if (k < BitmapFlow.HEADER_SIZE) return;
-						final long shift = (k - BitmapFlow.HEADER_SIZE) % HIDING_FACTOR;
+						if (!filter.test(p) || k < BitmapFlow.HEADER_SIZE) return;
+						final long shift = ek[0] % HIDING_FACTOR;
 						target[0] |= (p & HIDING_MASK) << (MAX_SHIFT - shift * SHIFT_FACTOR);
 						if (HIDING_FACTOR - shift == 1) {
-							final long ku = (k - BitmapFlow.HEADER_SIZE) / HIDING_FACTOR;
+							final long ku = ek[0] / HIDING_FACTOR;
 							drainer.drain(ku, target[0]);
 							target[0] = 0;
 						}
+						++ek[0];
 					});
 				}
 
@@ -147,20 +161,14 @@
 					return flow.isExhausted();
 				}
 
-				/*
-				 * Quizás haya que cambiar los tipos de este Pipelinable...
-				 *
-				 * 			Hacen falta estos métodos?
-				 */
-
 				@Override
 				public long getSize() {
-					/**/return flow.getSize();
+					return flow.getSize();
 				}
 
 				@Override
 				public String getName() {
-					/**/return null;
+					return flow.getName();
 				}
 			};
 		}

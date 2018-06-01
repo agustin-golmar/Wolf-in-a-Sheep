@@ -52,9 +52,11 @@
 			= "Cannot open the wolf file.";
 		public static final String CANNOT_WRITE_OUTPUT
 			= "Cannot create the Final Sheep (i.e., the output file).";
-
 		public static final String UNSUPPORTED_BITMAP_FORMAT
 			= "The sheep is not in BMP v3 format.";
+		public static final String CANNOT_GET_AVAILABLE_SPACE
+			= "Warning! The available space in the sheep cannot be calculated.\n" +
+			"Proceeding anyway...";
 
 		public static String SHEEP_OVERFLOW_ERROR(
 				final long availableSpace, final long bytesNeeded) {
@@ -88,5 +90,9 @@
 
 		public static String CANNOT_OPEN_FINAL_SHEEP(final String filename) {
 			return "Cannot open the Final Sheep file ('" + filename + "').";
+		}
+
+		public static String FINISH_TIME(final double seconds) {
+			return "Finished in " + seconds + " sec.";
 		}
 	}

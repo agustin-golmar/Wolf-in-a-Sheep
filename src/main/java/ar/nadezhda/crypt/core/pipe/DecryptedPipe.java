@@ -1,21 +1,20 @@
 
-	package ar.nadezhda.crypt.cipher;
+	package ar.nadezhda.crypt.core.pipe;
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
-	import ar.nadezhda.crypt.interfaces.Cipher;
+	import ar.nadezhda.crypt.interfaces.BoundedFlow;
 	import ar.nadezhda.crypt.interfaces.Drainer;
-	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.interfaces.Flow;
+	import ar.nadezhda.crypt.interfaces.Pipelinable;
 
-	public class AES192 implements Cipher {
-
-		public AES192() {
-		}
+	public class DecryptedPipe<T extends Flow>
+		implements Pipelinable<T, BoundedFlow> {
 
 		@Override
-		public RegisteredFlow inject(final RegisteredFlow flow)
+		public BoundedFlow inject(final T flow)
 				throws PipelineBrokenException {
-			return new RegisteredFlow() {
+			return new BoundedFlow() {
 
 				@Override
 				public void consume(final Drainer drainer)
@@ -30,12 +29,7 @@
 
 				@Override
 				public long getSize() {
-					return flow.getSize();
-				}
-
-				@Override
-				public String getName() {
-					return flow.getName();
+					return 0;
 				}
 			};
 		}

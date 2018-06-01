@@ -7,17 +7,16 @@
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
-	import ar.nadezhda.crypt.interfaces.BoundedFlow;
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
 	import ar.nadezhda.crypt.support.Message;
 
-	public class MetadataPipe
-		implements Pipelinable<RegisteredFlow, BoundedFlow> {
+	public class MetadataPipe<T extends RegisteredFlow>
+		implements Pipelinable<T, RegisteredFlow> {
 
 		@Override
-		public BoundedFlow inject(final RegisteredFlow flow)
+		public RegisteredFlow inject(final T flow)
 				throws PipelineBrokenException {
 			final long size = flow.getSize();
 			final String name = flow.getName();
@@ -39,7 +38,7 @@
 				throw new PipelineBrokenException(
 					Message.CANNOT_ENCODE_EXTENSION(extension));
 			}
-			return new BoundedFlow() {
+			return new RegisteredFlow() {
 
 				@Override
 				public void consume(final Drainer drainer)
@@ -71,6 +70,11 @@
 				@Override
 				public long getSize() {
 					return 4 + size + extensionBuffer.capacity();
+				}
+
+				@Override
+				public String getName() {
+					return flow.getName();
 				}
 			};
 		}

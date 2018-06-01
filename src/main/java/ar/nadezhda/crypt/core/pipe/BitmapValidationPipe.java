@@ -6,11 +6,11 @@
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 	import ar.nadezhda.crypt.support.Message;
 
-	public class BitmapValidationPipe
-		implements Pipelinable<BitmapFlow, BitmapFlow> {
+	public class BitmapValidationPipe<T extends BitmapFlow>
+		implements Pipelinable<T, T> {
 
 		@Override
-		public BitmapFlow inject(final BitmapFlow flow)
+		public T inject(final T flow)
 				throws PipelineBrokenException {
 			if (!flow.getSignature().equals(BitmapFlow.SIGNATURE))
 				throw new PipelineBrokenException(Message.UNKNOWN_SIGNATURE);
