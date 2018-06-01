@@ -5,6 +5,9 @@
 	import java.nio.ByteBuffer;
 	import java.nio.ByteOrder;
 
+	import org.apache.commons.lang3.mutable.MutableBoolean;
+	import org.apache.commons.lang3.mutable.MutableLong;
+
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
 	import ar.nadezhda.crypt.interfaces.Drainer;
@@ -25,25 +28,26 @@
 			return new RegisteredFlow() {
 
 				// Effectively-final hack:
-				protected final long [] size = {-1, 0};
-				protected final boolean [] loaded = {false};
+				protected final MutableLong remaining = new MutableLong(-1);
+				protected final MutableLong size = new MutableLong(0);
+				protected final MutableBoolean loaded = new MutableBoolean(false);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
 					flow.consume((k, p) -> {
-						if (0 < size[0]) {
+						if (0 < remaining.longValue()) {
 							drainer.drain(k - 4, p);
-							--size[0];
+							remaining.decrement();
 						}
 						else if (sizeBuffer.hasRemaining()) sizeBuffer.put(p);
-						else if (size[0] < 0) {
+						else if (remaining.longValue() < 0) {
 							sizeBuffer.flip();
-							size[0] = sizeBuffer.getInt();
-							size[1] = size[0];
-							if (0 < size[0]) {
+							remaining.setValue(sizeBuffer.getInt());
+							size.setValue(remaining.longValue());
+							if (0 < remaining.longValue()) {
 								drainer.drain(k - 4, p);
-								--size[0];
+								remaining.decrement();
 							}
 						}
 						else if (p != 0) {
@@ -51,19 +55,19 @@
 								extension.put(p);
 							}
 						}
-						else loaded[0] = true;
+						else loaded.setTrue();
 					});
 				}
 
 				@Override
 				public boolean isExhausted() {
 					return flow.isExhausted()
-						|| (size[0] == 0 && loaded[0]);
+						|| (remaining.longValue() == 0 && loaded.isTrue());
 				}
 
 				@Override
 				public long getSize() {
-					return size[1];
+					return size.longValue();
 				}
 
 				@Override

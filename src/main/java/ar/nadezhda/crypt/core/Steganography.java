@@ -10,8 +10,8 @@
 	import ar.nadezhda.crypt.core.flow.FileFlow;
 	import ar.nadezhda.crypt.core.pipe.BitmapPipe;
 	import ar.nadezhda.crypt.core.pipe.BitmapValidationPipe;
-import ar.nadezhda.crypt.core.pipe.DecryptedPipe;
-import ar.nadezhda.crypt.core.pipe.MetadataPipe;
+	import ar.nadezhda.crypt.core.pipe.DecryptedPipe;
+	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
 	import ar.nadezhda.crypt.core.pipe.OutputPipe;
 	import ar.nadezhda.crypt.core.pipe.WolfPipe;
 	import ar.nadezhda.crypt.support.Message;

@@ -3,6 +3,10 @@
 
 	import java.util.function.Predicate;
 
+	import org.apache.commons.lang3.mutable.MutableByte;
+	import org.apache.commons.lang3.mutable.MutableInt;
+	import org.apache.commons.lang3.mutable.MutableLong;
+
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.core.exception.NonMergeableFlowException;
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
@@ -66,9 +70,9 @@
 		protected class MergedFlow implements Flow {
 
 			// Effectively-final hack:
-			protected final byte [] target = {0};
-			protected final int [] remain = {HIDING_FACTOR - 1};
-			protected final long [] ek = {0};
+			protected final MutableByte target = new MutableByte(0);
+			protected final MutableInt remain = new MutableInt(HIDING_FACTOR - 1);
+			protected final MutableLong ek = new MutableLong(0);
 
 			protected final Flow payload;
 			protected final BoundedFlow carrier;
@@ -94,13 +98,13 @@
 						drainer.drain(k, p);
 						return;
 					}
-					final long shift = ek[0] % HIDING_FACTOR;
+					final long shift = ek.longValue() % HIDING_FACTOR;
 					final boolean exhausted = payload.isExhausted();
 					if (shift == 0) {
 						if (!exhausted) {
 							try {
 								payload.consume((kp, pp) -> {
-									target[0] = pp;
+									target.setValue(pp);
 								});
 							}
 							catch (final ExhaustedFlowException ignored) {
@@ -108,15 +112,15 @@
 							}
 						}
 					}
-					if (exhausted && 0 == remain[0]) {
+					if (exhausted && 0 == remain.intValue()) {
 						drainer.drain(k, p);
 					}
 					else {
-						if (exhausted) --remain[0];
-						final byte hiding = (byte) (target[0] >> (MAX_SHIFT - shift * SHIFT_FACTOR));
+						if (exhausted) remain.decrement();
+						final byte hiding = (byte) (target.byteValue() >> (MAX_SHIFT - shift * SHIFT_FACTOR));
 						drainer.drain(k, (byte) ((p & MASK) | (hiding & HIDING_MASK)));
 					}
-					++ek[0];
+					ek.increment();
 				});
 			}
 
@@ -137,22 +141,23 @@
 			return new RegisteredFlow() {
 
 				// Effectively-final hack:
-				protected final byte [] target = {0};
-				protected final long [] ek = {0};
+				protected final MutableByte target = new MutableByte(0);
+				protected final MutableLong ek = new MutableLong(0);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
 					flow.consume((k, p) -> {
 						if (!filter.test(p) || k < BitmapFlow.HEADER_SIZE) return;
-						final long shift = ek[0] % HIDING_FACTOR;
-						target[0] |= (p & HIDING_MASK) << (MAX_SHIFT - shift * SHIFT_FACTOR);
+						final long shift = ek.longValue() % HIDING_FACTOR;
+						target.setValue(target.byteValue()
+							| (p & HIDING_MASK) << (MAX_SHIFT - shift * SHIFT_FACTOR));
 						if (HIDING_FACTOR - shift == 1) {
-							final long ku = ek[0] / HIDING_FACTOR;
-							drainer.drain(ku, target[0]);
-							target[0] = 0;
+							final long ku = ek.longValue() / HIDING_FACTOR;
+							drainer.drain(ku, target.byteValue());
+							target.setValue(0);
 						}
-						++ek[0];
+						ek.increment();
 					});
 				}
 

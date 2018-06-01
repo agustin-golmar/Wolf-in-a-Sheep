@@ -4,14 +4,14 @@
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Flow;
+	import ar.nadezhda.crypt.support.Message;
 
 	public class EmptyFlow implements Flow {
 
 		@Override
 		public void consume(final Drainer drainer)
 				throws ExhaustedFlowException {
-			throw new ExhaustedFlowException(
-				"This is an empty flow. You can't consume it.");
+			throw new ExhaustedFlowException(Message.EMPTY_FLOW);
 		}
 
 		@Override

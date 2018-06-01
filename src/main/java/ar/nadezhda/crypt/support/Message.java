@@ -57,6 +57,8 @@
 		public static final String CANNOT_GET_AVAILABLE_SPACE
 			= "Warning! The available space in the sheep cannot be calculated.\n" +
 			"Proceeding anyway...";
+		public static final String EMPTY_FLOW
+			= "This is an empty flow. You can't consume it.";
 
 		public static String SHEEP_OVERFLOW_ERROR(
 				final long availableSpace, final long bytesNeeded) {
@@ -94,5 +96,9 @@
 
 		public static String FINISH_TIME(final double seconds) {
 			return "Finished in " + seconds + " sec.";
+		}
+
+		public static String SHEEP_PROPERTIES(final String properties) {
+			return "Sheep Properties: \n" + properties + "\n";
 		}
 	}
