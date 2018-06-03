@@ -1,5 +1,7 @@
 ![...](res/image/readme-header.png)
 
+![...](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep.svg?branch=master)
+
 # Wolf in a Sheep
 
 A steganographer-encrypter application for hiding a wolf in a sheep. This only
