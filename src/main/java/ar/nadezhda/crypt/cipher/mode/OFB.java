@@ -5,6 +5,13 @@
 
 	public class OFB implements CipherMode {
 
-		public OFB() {
+		@Override
+		public String getName() {
+			return "OFB";
+		}
+
+		@Override
+		public boolean needIV() {
+			return true;
 		}
 	}

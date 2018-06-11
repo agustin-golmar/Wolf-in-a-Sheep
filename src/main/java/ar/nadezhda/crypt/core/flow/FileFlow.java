@@ -9,6 +9,7 @@
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.support.Message;
 
 		/**
 		* <p>Un flujo de datos que proviene de un archivo de sólo lectura. El
@@ -57,7 +58,7 @@
 			}
 			catch (final IOException exception) {
 				throw new ExhaustedFlowException(
-					"Error reading from the input file ('" + filename + "').");
+					Message.UNKNOWN_INPUT_ERROR(filename));
 			}
 		}
 

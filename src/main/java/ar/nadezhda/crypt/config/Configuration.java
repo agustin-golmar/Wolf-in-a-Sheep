@@ -1,11 +1,18 @@
 
 	package ar.nadezhda.crypt.config;
 
+	import java.lang.reflect.Constructor;
+	import java.lang.reflect.InvocationTargetException;
+	import java.security.InvalidAlgorithmParameterException;
+	import java.security.InvalidKeyException;
+	import java.security.NoSuchAlgorithmException;
 	import java.util.Optional;
 
 	import com.beust.jcommander.Parameter;
 	import com.beust.jcommander.ParameterException;
 
+	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
+	import ar.nadezhda.crypt.core.pipe.EncryptedPipe;
 	import ar.nadezhda.crypt.core.pipe.IdentityPipe;
 	import ar.nadezhda.crypt.factory.CipherFactory;
 	import ar.nadezhda.crypt.factory.CipherModeFactory;
@@ -75,7 +82,7 @@
 			converter = CipherFactory.class,
 			description = Message.A_DESC
 		)
-		protected Optional<Cipher> cipher;
+		protected Optional<Constructor<Cipher>> cipher;
 
 		@Parameter(
 			order = 7,
@@ -141,7 +148,7 @@
 			return steganographer;
 		}
 
-		public Optional<Cipher> getCipher() {
+		public Optional<Constructor<Cipher>> getCipher() {
 			return cipher;
 		}
 
@@ -161,8 +168,53 @@
 			return steganographer.get();
 		}
 
-		public Pipelinable<RegisteredFlow, RegisteredFlow> getEncryptedPipe() {
+		public <T extends RegisteredFlow> Pipelinable<T, T> getEncryptedPipe()
+				throws InvalidKeyException, NoSuchAlgorithmException,
+					InvalidAlgorithmParameterException, PipelineBrokenException {
+			if (password == null || password.isEmpty()) {
+				return new IdentityPipe<T>();
+			}
+			else {
+				try {
+					final Cipher cipher = getCipher().get()
+							.newInstance(mode.get(), password);
+					return new EncryptedPipe<T>(cipher);
+				}
+				catch (final InstantiationException
+						| IllegalAccessException
+						| IllegalArgumentException
+						| InvocationTargetException exception) {
+					exception.printStackTrace();
+					throw new PipelineBrokenException(
+						"Can't build the pipeline for encryption.");
+				}
+			}
+		}
+
+		/*public <T extends RegisteredFlow> Pipelinable<T, T> getDecryptedPipe() {
 			return password == null || password.isEmpty()?
-					new IdentityPipe<RegisteredFlow>() : getCipher().get();
+					new IdentityPipe<T>() :
+					new DecryptedPipe<T>(getCipher().get());
+		}*/
+
+		@Override
+		public String toString() {
+			return new StringBuffer()
+					.append("Configuration:\n")
+					.append("\tSteganographer: ")
+					.append(steganographer)
+					.append("\n\tInput: ")
+					.append(inputFilename)
+					.append("\n\tCarrier: ")
+					.append(carrierFilename)
+					.append("\n\tOutput: ")
+					.append(outputFilename)
+					.append("\n\tCipher: ")
+					.append(cipher)
+					.append("\n\tMode: ")
+					.append(mode)
+					.append("\n\tPassword: ")
+					.append(password)
+					.toString();
 		}
 	}

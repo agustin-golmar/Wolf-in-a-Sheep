@@ -1,42 +1,26 @@
 
 	package ar.nadezhda.crypt.cipher;
 
-	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
-	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
+	import java.security.NoSuchAlgorithmException;
+	import javax.crypto.NoSuchPaddingException;
+
 	import ar.nadezhda.crypt.interfaces.Cipher;
-	import ar.nadezhda.crypt.interfaces.Drainer;
-	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.interfaces.CipherMode;
 
-	public class AES192 implements Cipher {
+	public class AES192 extends Cipher {
 
-		public AES192() {
+		public AES192(final CipherMode mode, final String password)
+				throws NoSuchAlgorithmException, NoSuchPaddingException {
+			super(mode, password);
 		}
 
 		@Override
-		public RegisteredFlow inject(final RegisteredFlow flow)
-				throws PipelineBrokenException {
-			return new RegisteredFlow() {
+		public String getName() {
+			return "AES";
+		}
 
-				@Override
-				public void consume(final Drainer drainer)
-						throws ExhaustedFlowException {
-					flow.consume(drainer);
-				}
-
-				@Override
-				public boolean isExhausted() {
-					return flow.isExhausted();
-				}
-
-				@Override
-				public long getSize() {
-					return flow.getSize();
-				}
-
-				@Override
-				public String getName() {
-					return flow.getName();
-				}
-			};
+		@Override
+		public int getKeySizeInBits() {
+			return 192;
 		}
 	}

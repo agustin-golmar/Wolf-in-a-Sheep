@@ -1,6 +1,67 @@
 
 	package ar.nadezhda.crypt.interfaces;
 
-	public interface Cipher
-		extends Pipelinable<RegisteredFlow, RegisteredFlow> {
+	import java.security.InvalidAlgorithmParameterException;
+	import java.security.InvalidKeyException;
+	import java.security.NoSuchAlgorithmException;
+	import java.util.Optional;
+
+	import javax.crypto.NoSuchPaddingException;
+	import javax.crypto.SecretKey;
+	import javax.crypto.spec.IvParameterSpec;
+
+	import ar.nadezhda.crypt.support.Random;
+
+	public abstract class Cipher {
+
+		public static final String DEFAULT_PADDING = "PKCS5Padding";
+
+		protected final javax.crypto.Cipher cipher;
+		protected final String transform;
+		protected final CipherMode mode;
+		protected final SecretKey key;
+
+		public Cipher(final CipherMode mode, final String password)
+				throws NoSuchAlgorithmException, NoSuchPaddingException {
+			this.transform = getName() + "/" + mode.getName() + "/" + DEFAULT_PADDING;
+			this.cipher = javax.crypto.Cipher.getInstance(transform);
+			this.key = Random.key(this, password);
+			this.mode = mode;
+		}
+
+		public int getBlockSizeInBytes() {
+			return cipher.getBlockSize();
+		}
+
+		public CipherMode getMode() {
+			return mode;
+		}
+
+		public Cipher on(final int mode, final Optional<IvParameterSpec> IV)
+				throws InvalidKeyException, InvalidAlgorithmParameterException {
+			if (this.mode.needIV()) {
+				if (IV.isPresent()) {
+					cipher.init(mode, key, IV.get());
+				}
+				else throw new InvalidAlgorithmParameterException(
+					"Need a valid IV (initialization vector).");
+			}
+			else {
+				cipher.init(mode, key);
+			}
+			return this;
+		}
+
+		public Cipher onDecrypt(final Optional<IvParameterSpec> IV)
+				throws InvalidKeyException, InvalidAlgorithmParameterException {
+			return on(javax.crypto.Cipher.DECRYPT_MODE, IV);
+		}
+
+		public Cipher onEncrypt(final Optional<IvParameterSpec> IV)
+				throws InvalidKeyException, InvalidAlgorithmParameterException {
+			return on(javax.crypto.Cipher.ENCRYPT_MODE, IV);
+		}
+
+		public abstract String getName();
+		public abstract int getKeySizeInBits();
 	}

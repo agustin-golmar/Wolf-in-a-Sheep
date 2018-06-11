@@ -5,6 +5,13 @@
 
 	public class CFB implements CipherMode {
 
-		public CFB() {
+		@Override
+		public String getName() {
+			return "CFB";
+		}
+
+		@Override
+		public boolean needIV() {
+			return true;
 		}
 	}

@@ -3,6 +3,9 @@
 
 	import java.io.IOException;
 	import java.nio.file.NoSuchFileException;
+	import java.security.InvalidAlgorithmParameterException;
+	import java.security.InvalidKeyException;
+	import java.security.NoSuchAlgorithmException;
 
 	import ar.nadezhda.crypt.config.Configuration;
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
@@ -20,6 +23,7 @@
 	public class Steganography {
 
 		public static void with(final Configuration config) {
+			System.out.println(config);
 			final Timer timer = Timer.start();
 			try {
 				if (config.isEmbed()) {
@@ -40,12 +44,19 @@
 				System.out.println(exception.getMessage());
 				exception.printStackTrace();
 			}
+			catch (final InvalidKeyException
+					| NoSuchAlgorithmException
+					| InvalidAlgorithmParameterException exception) {
+				exception.printStackTrace();
+			}
 			System.out.println(
 				Message.FINISH_TIME(timer.getTimeInSeconds()));
 		}
 
 		protected static void embed(final Configuration config)
-				throws PipelineBrokenException, IOException, ExhaustedFlowException {
+				throws PipelineBrokenException, IOException, ExhaustedFlowException,
+					InvalidKeyException, NoSuchAlgorithmException,
+					InvalidAlgorithmParameterException {
 
 			System.out.println("Piping output...");
 			new FileFlow(config.getInputFilename())

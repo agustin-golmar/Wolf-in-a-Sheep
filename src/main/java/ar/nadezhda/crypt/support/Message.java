@@ -90,6 +90,11 @@
 				+ filename + "').";
 		}
 
+		public static String UNKNOWN_INPUT_ERROR(final String filename) {
+			return "Unexpected error when reading from input file ('"
+				+ filename + "').";
+		}
+
 		public static String CANNOT_OPEN_FINAL_SHEEP(final String filename) {
 			return "Cannot open the Final Sheep file ('" + filename + "').";
 		}

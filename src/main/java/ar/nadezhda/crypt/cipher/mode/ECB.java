@@ -5,6 +5,13 @@
 
 	public class ECB implements CipherMode {
 
-		public ECB() {
+		@Override
+		public String getName() {
+			return "ECB";
+		}
+
+		@Override
+		public boolean needIV() {
+			return false;
 		}
 	}

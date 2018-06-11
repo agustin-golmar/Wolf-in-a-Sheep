@@ -5,6 +5,13 @@
 
 	public class CBC implements CipherMode {
 
-		public CBC() {
+		@Override
+		public String getName() {
+			return "CBC";
+		}
+
+		@Override
+		public boolean needIV() {
+			return true;
 		}
 	}
