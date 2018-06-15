@@ -1,13 +1,17 @@
 
 	package ar.nadezhda.crypt.interfaces;
 
+	import java.nio.ByteBuffer;
 	import java.security.InvalidAlgorithmParameterException;
 	import java.security.InvalidKeyException;
 	import java.security.NoSuchAlgorithmException;
 	import java.util.Optional;
 
-	import javax.crypto.NoSuchPaddingException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 	import javax.crypto.SecretKey;
+	import javax.crypto.ShortBufferException;
 	import javax.crypto.spec.IvParameterSpec;
 
 	import ar.nadezhda.crypt.support.Random;
@@ -33,8 +37,31 @@
 			return cipher.getBlockSize();
 		}
 
+		public long getIVSizeInBytes() {
+			return mode.needIV()? getBlockSizeInBytes() : 0;
+		}
+
 		public CipherMode getMode() {
 			return mode;
+		}
+
+		public long getOutputSizeInBytes(final int size) {
+			return cipher.getOutputSize(size);
+		}
+
+		public Cipher encrypt(
+				final ByteBuffer inputBlock, final ByteBuffer outputBlock)
+				throws ShortBufferException {
+			cipher.update(inputBlock, outputBlock);
+			return this;
+		}
+
+		public Cipher encryptLast(
+				final ByteBuffer inputBlock, final ByteBuffer outputBlock)
+						throws ShortBufferException,
+							IllegalBlockSizeException, BadPaddingException {
+			cipher.doFinal(inputBlock, outputBlock);
+			return this;
 		}
 
 		public Cipher on(final int mode, final Optional<IvParameterSpec> IV)
