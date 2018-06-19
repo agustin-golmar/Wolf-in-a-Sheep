@@ -13,7 +13,6 @@
 	import ar.nadezhda.crypt.core.flow.FileFlow;
 	import ar.nadezhda.crypt.core.pipe.BitmapPipe;
 	import ar.nadezhda.crypt.core.pipe.BitmapValidationPipe;
-	import ar.nadezhda.crypt.core.pipe.DecryptedPipe;
 	import ar.nadezhda.crypt.core.pipe.MetadataPipe;
 	import ar.nadezhda.crypt.core.pipe.OutputPipe;
 	import ar.nadezhda.crypt.core.pipe.WolfPipe;
@@ -72,14 +71,16 @@
 		}
 
 		protected static void extract(final Configuration config)
-				throws PipelineBrokenException, IOException, ExhaustedFlowException {
+				throws PipelineBrokenException, IOException, ExhaustedFlowException,
+					InvalidKeyException, InvalidAlgorithmParameterException,
+					NoSuchAlgorithmException {
 
 			System.out.println("Piping output...");
 			new FileFlow(config.getCarrierFilename())
 				.injectIn(new BitmapPipe<>()
 					.plug(new BitmapValidationPipe<>())
 					.plug(config.getSteganographerPipe())
-					.plug(new DecryptedPipe<>())
+					.plug(config.getDecryptedPipe())
 					.plug(new WolfPipe<>())
 					.plug(new OutputPipe<>(config.getOutputFilename())))
 					.flush();

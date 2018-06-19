@@ -22,6 +22,7 @@
 
 		@Override
 		public int getKeySizeInBits() {
-			return 56;
+			// Para que sea compatible con OpenSSL:
+			return 64;
 		}
 	}

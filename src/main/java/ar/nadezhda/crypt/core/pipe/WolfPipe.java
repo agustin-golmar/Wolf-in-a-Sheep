@@ -40,7 +40,9 @@
 							drainer.drain(k - 4, p);
 							remaining.decrement();
 						}
-						else if (sizeBuffer.hasRemaining()) sizeBuffer.put(p);
+						else if (sizeBuffer.hasRemaining()) {
+							sizeBuffer.put(p);
+						}
 						else if (remaining.longValue() < 0) {
 							sizeBuffer.flip();
 							remaining.setValue(sizeBuffer.getInt());

@@ -11,6 +11,11 @@
 		}
 
 		@Override
+		public String getPadding() {
+			return "NoPadding";
+		}
+
+		@Override
 		public boolean needIV() {
 			return true;
 		}

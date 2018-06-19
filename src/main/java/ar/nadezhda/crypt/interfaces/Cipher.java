@@ -7,9 +7,9 @@
 	import java.security.NoSuchAlgorithmException;
 	import java.util.Optional;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+	import javax.crypto.BadPaddingException;
+	import javax.crypto.IllegalBlockSizeException;
+	import javax.crypto.NoSuchPaddingException;
 	import javax.crypto.SecretKey;
 	import javax.crypto.ShortBufferException;
 	import javax.crypto.spec.IvParameterSpec;
@@ -18,23 +18,27 @@ import javax.crypto.NoSuchPaddingException;
 
 	public abstract class Cipher {
 
-		public static final String DEFAULT_PADDING = "PKCS5Padding";
-
 		protected final javax.crypto.Cipher cipher;
 		protected final String transform;
 		protected final CipherMode mode;
 		protected final SecretKey key;
+		protected final String password;
 
 		public Cipher(final CipherMode mode, final String password)
 				throws NoSuchAlgorithmException, NoSuchPaddingException {
-			this.transform = getName() + "/" + mode.getName() + "/" + DEFAULT_PADDING;
+			this.transform = getName() + "/" + mode.getName() + "/" + mode.getPadding();
 			this.cipher = javax.crypto.Cipher.getInstance(transform);
-			this.key = Random.key(this, password);
 			this.mode = mode;
+			this.password = password;
+			this.key = Random.key(this, password);
 		}
 
 		public int getBlockSizeInBytes() {
 			return cipher.getBlockSize();
+		}
+
+		public SecretKey getKey() {
+			return key;
 		}
 
 		public long getIVSizeInBytes() {
@@ -49,14 +53,18 @@ import javax.crypto.NoSuchPaddingException;
 			return cipher.getOutputSize(size);
 		}
 
-		public Cipher encrypt(
+		public String getPassword() {
+			return password;
+		}
+
+		public Cipher transform(
 				final ByteBuffer inputBlock, final ByteBuffer outputBlock)
 				throws ShortBufferException {
 			cipher.update(inputBlock, outputBlock);
 			return this;
 		}
 
-		public Cipher encryptLast(
+		public Cipher transformLast(
 				final ByteBuffer inputBlock, final ByteBuffer outputBlock)
 						throws ShortBufferException,
 							IllegalBlockSizeException, BadPaddingException {

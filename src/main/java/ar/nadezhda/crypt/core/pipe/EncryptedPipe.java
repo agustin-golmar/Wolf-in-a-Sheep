@@ -27,6 +27,8 @@
 	public class EncryptedPipe<T extends RegisteredFlow>
 		implements Pipelinable<T, T> {
 
+		public static final int INPUT_BLOCKS = 512;
+
 		protected final Optional<IvParameterSpec> IV;
 		protected final Cipher cipher;
 
@@ -34,7 +36,7 @@
 				throws NoSuchAlgorithmException, InvalidKeyException,
 					InvalidAlgorithmParameterException {
 			this.IV = cipher.getMode().needIV()?
-					Optional.of(Random.IV(cipher)) :
+					Optional.of(Random.IVfromKey(cipher)) :
 					Optional.empty();
 			this.cipher = cipher.onEncrypt(IV);
 		}
@@ -49,36 +51,21 @@
 					.order(ByteOrder.BIG_ENDIAN)
 					.putInt((int) size);
 			sizeBuffer.flip();
-			final ByteBuffer ivBuffer = ByteBuffer
-					.allocate((int) cipher.getIVSizeInBytes());
-			IV.ifPresent(iv -> ivBuffer.put(iv.getIV()));
-			final long ivSize = cipher.getIVSizeInBytes();
-			ivBuffer.flip();
 			final ByteBuffer inputBlock = ByteBuffer
-					.allocate(2 * cipher.getBlockSizeInBytes());
-			final ByteBuffer outputBlock = inputBlock.slice();
-			final long Δ = 4 + ivSize + size;
-			System.out.println("Real Size: " + Δ);
-			System.out.println("IV Size: " + ivSize);
-			System.out.println("Payload Size: " + size);
+					.allocate(INPUT_BLOCKS * cipher.getBlockSizeInBytes());
+			final ByteBuffer outputBlock = ByteBuffer
+					.allocate((INPUT_BLOCKS + 1) * cipher.getBlockSizeInBytes());
+			final long Δ = 4 + size;
 			return (T) new RegisteredFlow() {
 
-				/* Computar el tamaño de cifrado.
-				 * Agregar el tamaño en el flujo.
-				 * Enviar el IV, si existe. (Big Endian, Little?)
-				 * Luego enviar el flujo encriptado.
-				*/
-
 				// Effectively-final hack:
-				final MutableLong remaining = new MutableLong(size);
-				final MutableBoolean available = new MutableBoolean(false);
-				final int blockSize = cipher.getBlockSizeInBytes();
+				protected final MutableLong remaining = new MutableLong(size);
+				protected final MutableBoolean available = new MutableBoolean(false);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
 					if (available.isTrue()) {
-						// Hay data encriptada disponible para forwardear.
 						drainer.drain(Δ - remaining.getAndDecrement(), outputBlock.get());
 						if (!outputBlock.hasRemaining()) available.setFalse();
 					}
@@ -86,48 +73,19 @@
 						final int k = sizeBuffer.position();
 						drainer.drain(k, sizeBuffer.get());
 					}
-					else if (ivBuffer.hasRemaining()) {
-						final int k = ivBuffer.position();
-						drainer.drain(4 + k, ivBuffer.get());
-					}
 					else if (!flow.isExhausted()) {
 						flow.consume((k, payload) -> inputBlock.put(payload));
 					}
-					// Siempre intento encriptar...
 					if (available.isFalse()) {
-						if (inputBlock.remaining() == blockSize) {
-							// El buffer se llenó. Encripto el bloque.
+						final boolean inputIsFull = !inputBlock.hasRemaining();
+						final boolean lastBytes = flow.isExhausted() && 0 < inputBlock.position();
+						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
 							try {
-								// 9 bloques, 148 bytes totales:
-								// 4 + 16 + 128 (8 bloques cifrados)
-								// Los 128 son:
-								// 4 + 119 + 5 (extension)
-								System.out.println("Plain block         (I):" + inputBlock);
-								System.out.println("Plain block         (O):" + outputBlock);
-								cipher.encrypt(inputBlock, outputBlock);
+								if (inputIsFull) cipher.transform(inputBlock, outputBlock);
+								else cipher.transformLast(inputBlock, outputBlock);
 								outputBlock.flip();
-								System.out.println("Encrypted block     (I): " + inputBlock);
-								System.out.println(">>> Encrypted block (O): " + outputBlock + "\n");
-								available.setTrue();
-							}
-							catch (final ShortBufferException exception) {
-								exception.printStackTrace();
-							}
-							inputBlock.clear();
-						}
-						else if (flow.isExhausted() && 0 < inputBlock.position()) {
-							//System.out.println("LAST! Plain block         (I-last):" + inputBlock);
-							inputBlock.flip();
-							outputBlock.clear();
-							try {
-								System.out.println("Plain block         (I-last):" + inputBlock);
-								System.out.println("Plain block         (O-last):" + outputBlock);
-								cipher.encryptLast(inputBlock, outputBlock);
-								outputBlock.flip();
-								System.out.println("Encrypted block     (I-last): " + inputBlock);
-								System.out.println(">>> Encrypted block (O-last): " + outputBlock + "\n");
 								available.setTrue();
 							}
 							catch (final ShortBufferException
@@ -143,7 +101,6 @@
 				@Override
 				public boolean isExhausted() {
 					return remaining.longValue() == 0
-							&& !ivBuffer.hasRemaining()
 							&& !sizeBuffer.hasRemaining();
 				}
 

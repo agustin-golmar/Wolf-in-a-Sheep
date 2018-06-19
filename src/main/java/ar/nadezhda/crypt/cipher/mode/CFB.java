@@ -7,7 +7,12 @@
 
 		@Override
 		public String getName() {
-			return "CFB";
+			return "CFB8";
+		}
+
+		@Override
+		public String getPadding() {
+			return "NoPadding";
 		}
 
 		@Override

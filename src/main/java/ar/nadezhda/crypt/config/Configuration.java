@@ -12,6 +12,7 @@
 	import com.beust.jcommander.ParameterException;
 
 	import ar.nadezhda.crypt.core.exception.PipelineBrokenException;
+	import ar.nadezhda.crypt.core.pipe.DecryptedPipe;
 	import ar.nadezhda.crypt.core.pipe.EncryptedPipe;
 	import ar.nadezhda.crypt.core.pipe.IdentityPipe;
 	import ar.nadezhda.crypt.factory.CipherFactory;
@@ -191,11 +192,28 @@
 			}
 		}
 
-		/*public <T extends RegisteredFlow> Pipelinable<T, T> getDecryptedPipe() {
-			return password == null || password.isEmpty()?
-					new IdentityPipe<T>() :
-					new DecryptedPipe<T>(getCipher().get());
-		}*/
+		public <T extends Flow> Pipelinable<T, T> getDecryptedPipe()
+				throws PipelineBrokenException, InvalidKeyException,
+					InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+			if (password == null || password.isEmpty()) {
+				return new IdentityPipe<T>();
+			}
+			else {
+				try {
+					final Cipher cipher = getCipher().get()
+							.newInstance(mode.get(), password);
+					return new DecryptedPipe<T>(cipher);
+				}
+				catch (final InstantiationException
+						| IllegalAccessException
+						| IllegalArgumentException
+						| InvocationTargetException exception) {
+					exception.printStackTrace();
+					throw new PipelineBrokenException(
+						"Can't build the pipeline for decryption.");
+				}
+			}
+		}
 
 		@Override
 		public String toString() {
