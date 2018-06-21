@@ -19,10 +19,9 @@ target/
 .classpath
 .project
 
-!lib/**/*.jar
-
 # -----------------------------------------------------------------------------
 # Project Specific:
 #
 
 res/data/*
+!res/data/*.jpg

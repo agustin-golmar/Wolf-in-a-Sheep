@@ -68,7 +68,7 @@ algorithm for key and IV deterministic derivation.
 This application uses these _Java_ libraries to complete its task:
 
 * __[Apache Commons-Lang v3.7](https://commons.apache.org/proper/commons-lang/)__:
-by the mutable values, needed to make an effectively-final hack.
+for the mutable values, needed to make an effectively-final hack.
 * __[JCommander v1.72](http://jcommander.org/)__: for parsing the command line
 input parameters.
 
