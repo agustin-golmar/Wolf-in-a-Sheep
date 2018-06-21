@@ -22,7 +22,7 @@
 	public class Steganography {
 
 		public static void with(final Configuration config) {
-			System.out.println(config);
+			System.out.println(config + "\n");
 			final Timer timer = Timer.start();
 			try {
 				if (config.isEmbed()) {
@@ -33,22 +33,21 @@
 				}
 			}
 			catch (final NoSuchFileException exception) {
-				System.out.println(
+				System.err.println(
 					Message.CANNOT_OPEN_FINAL_SHEEP(
 						exception.getMessage()));
 			}
 			catch (final PipelineBrokenException
 					| IOException
 					| ExhaustedFlowException exception) {
-				System.out.println(exception.getMessage());
-				exception.printStackTrace();
+				System.err.println(exception.getMessage());
 			}
 			catch (final InvalidKeyException
 					| NoSuchAlgorithmException
 					| InvalidAlgorithmParameterException exception) {
 				exception.printStackTrace();
 			}
-			System.out.println(
+			System.out.println("\n" +
 				Message.FINISH_TIME(timer.getTimeInSeconds()));
 		}
 
@@ -57,7 +56,7 @@
 					InvalidKeyException, NoSuchAlgorithmException,
 					InvalidAlgorithmParameterException {
 
-			System.out.println("Piping output...");
+			System.out.println("(Embedding) Piping output...");
 			new FileFlow(config.getInputFilename())
 				.injectIn(new MetadataPipe<>()
 					.plug(config.getEncryptedPipe()))
@@ -75,7 +74,7 @@
 					InvalidKeyException, InvalidAlgorithmParameterException,
 					NoSuchAlgorithmException {
 
-			System.out.println("Piping output...");
+			System.out.println("(Extracting) Piping output...");
 			new FileFlow(config.getCarrierFilename())
 				.injectIn(new BitmapPipe<>()
 					.plug(new BitmapValidationPipe<>())

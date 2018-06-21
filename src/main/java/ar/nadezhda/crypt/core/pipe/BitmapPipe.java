@@ -86,20 +86,20 @@
 
 				@Override
 				public String toString() {
-					return new StringBuilder(192)
-							.append("\tSize: ")
+					return new StringBuilder(256)
+							.append("\t          Size : ")
 							.append(getSize())
-							.append(" bytes\n\tCompression: ")
+							.append(" bytes\n\t   Compression : ")
 							.append(isCompressed())
-							.append("\n\tColor Depth: ")
+							.append("\n\t   Color Depth : ")
 							.append(getBits())
-							.append(" bits\n\tResolution: ")
+							.append(" bits\n\t    Resolution : ")
 							.append(getWidth())
 							.append("x")
 							.append(getHeight())
-							.append(" pixels\n\tRow Size: ")
+							.append(" pixels\n\t      Row Size : ")
 							.append(getRowSizeInBytes())
-							.append(" bytes\n\tRow Padding: ")
+							.append(" bytes\n\t   Row Padding : ")
 							.append(getRowPaddingInBytes())
 							.append(" bytes")
 							.toString();

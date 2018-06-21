@@ -29,8 +29,8 @@
 				Steganography.with(config);
 			}
 			catch (final ParameterException exception) {
-				System.out.println("\n" + exception.getMessage() + ".\n");
-				cli.usage();
+				System.err.println("\n" + exception.getMessage() + ".\n");
+				System.out.println(Message.USAGE());
 			}
 		}
 	}

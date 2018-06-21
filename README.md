@@ -1,5 +1,7 @@
 ![...](res/image/readme-header.png)
-![...](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep.svg?branch=master)
+[![...](https://img.shields.io/badge/license-WTFPL%20v2.0-red.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/blob/master/LICENSE.md)
+[![...](https://img.shields.io/badge/release-v1.0-blue.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/releases)
+[![...](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep.svg?branch=master)](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep)
 
 # Wolf in a Sheep
 
@@ -27,7 +29,7 @@ Or do it manually, if you prefer.
 
 ## Execution
 
-In the root folder (after build):
+In the root folder, type:
 
 ```
 $ java -jar stegobmp.jar <arguments>
@@ -38,9 +40,10 @@ Where the arguments can be:
 * `-embed`: If you want to hide a wolf in a sheep.
 * `-extract`: If you want to get back the wolf you hid in a sheep.
 * `-in`: The wolf you want to hide (only for _-embed_).
-* `-p`: The sheep in which you will hide the wolf.
+* `-p`: The sheep in which you will hide the wolf, or the final sheep with a
+hidden wolf ready for extraction.
 * `-out`: The final sheep, with the wolf inside.
-* `-steg`: The steganographer. Must be _LSB1_, _LSB4_ or _LSBE_.
+* `-steg`: The steganographer. Must be _LSB1_, _LSB4_, _LSB8_ or _LSBE_.
 * `-a`: The cipher involved. Must be _aes128_, _aes192_, _aes256_ or _des_.
 * `-m`: The operating mode of the cipher. Must be _ecb_, _cfb_, _ofb_ or _cbc_.
 * `-pass`: The password for the cipher.
@@ -49,15 +52,33 @@ By default, `stegobmp` will:
 
 * Use _aes128_ as the cipher (in case you provide a password).
 * Use _cbc_ as the cipher mode.
-* Use _MD5_ for the hashing of the password (without _salt_).
-* Use _PKCS5_ as the wolf-padding mechanism.
-* Use 8-bits feedback mode.
+* Use _SHA-256_ for the hashing of the password (without _salt_).
+* Use an _OpenSSL_-like [EVP_BytesToKey](https://www.openssl.org/docs/man1.1.0/crypto/EVP_BytesToKey.html)
+algorithm for key and IV deterministic derivation.
+* Use _PKCS5_ as the wolf-padding mechanism (only for _ECB_ and _CBC_ mode).
+* Use 8-bits feedback mode in _CFB_, and 128-bits in _OFB_.
+
+> __NOTE:__ If you wish to encrypt with larger keys for _AES_ cipher (_i.e._,
+> 192 or 256 bits), you must install the [Java Cryptography Extension (JCE)
+> Unlimited Strength Jurisdiction Policy Files 8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html).
+> This way, you can run the cipher with every key-length desired.
+
+## Libraries
+
+This application uses these _Java_ libraries to complete its task:
+
+* __[Apache Commons-Lang v3.7](https://commons.apache.org/proper/commons-lang/)__:
+by the mutable values, needed to make an effectively-final hack.
+* __[JCommander v1.72](http://jcommander.org/)__: for parsing the command line
+input parameters.
 
 ## Designer
 
 This project has been built, designed and maintained by:
 
 * [Agustín Golmar](https://github.com/agustin-golmar)
+
+And in case you are asking yourself... no, I'm not a sheep.
 
 ## Bibliography
 

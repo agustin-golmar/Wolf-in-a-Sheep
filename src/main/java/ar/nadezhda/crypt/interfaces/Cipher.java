@@ -14,6 +14,7 @@
 	import javax.crypto.ShortBufferException;
 	import javax.crypto.spec.IvParameterSpec;
 
+	import ar.nadezhda.crypt.support.Message;
 	import ar.nadezhda.crypt.support.Random;
 
 	public abstract class Cipher {
@@ -79,7 +80,7 @@
 					cipher.init(mode, key, IV.get());
 				}
 				else throw new InvalidAlgorithmParameterException(
-					"Need a valid IV (initialization vector).");
+					Message.NEED_VALID_IV);
 			}
 			else {
 				cipher.init(mode, key);

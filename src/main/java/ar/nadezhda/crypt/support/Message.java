@@ -38,7 +38,7 @@
 		public static final String UNKNOWN_MODE_ERROR
 			= "Unknown cipher mode. See usage...";
 		public static final String UNKNOWN_STEGANOGRAPHER_ERROR
-			= "Unknown steganographer. See usage...";
+			= "Unknown steganographer. See usage..";
 
 		public static final String CANNOT_OPEN_CARRIER
 			= "Cannot open the carrier file (i.e., the sheep).";
@@ -59,6 +59,14 @@
 			"Proceeding anyway...";
 		public static final String EMPTY_FLOW
 			= "This is an empty flow. You can't consume it.";
+		public static final String INVALID_CIPHER_MODE
+			= "The cipher mode specified is not consistent with the input format.";
+		public static final String CANNOT_BUILD_ENCRYPTION
+			= "Can't build the pipeline for encryption.";
+		public static final String CANNOT_BUILD_DECRYPTION
+			= "Can't build the pipeline for decryption.";
+		public static final String NEED_VALID_IV
+			= "Need a valid IV (initialization vector).";
 
 		public static String SHEEP_OVERFLOW_ERROR(
 				final long availableSpace, final long bytesNeeded) {
@@ -105,5 +113,34 @@
 
 		public static String SHEEP_PROPERTIES(final String properties) {
 			return "Sheep Properties: \n" + properties + "\n";
+		}
+
+		public static String USAGE() {
+			return new StringBuilder(1024)
+				.append("\tUsage: stegobmp.jar <arguments>\n\n")
+				.append("Where <arguments> can be:\n\n")
+				.append("\t-embed\n")
+				.append("\t\tIf you want to hide a wolf in a sheep.\n")
+				.append("\t-extract\n")
+				.append("\t\tIf you want to get back the wolf you hid in a sheep.\n\n")
+				.append("\t-in <filename>\n")
+				.append("\t\tThe wolf you want to hide (only for -embed).\n")
+				.append("\t-p <bitmap filename>\n")
+				.append("\t\tThe sheep in which you will hide the wolf, or the final sheep with a\n")
+				.append("\t\thidden wolf ready for extraction.\n")
+				.append("\t-out <filename>\n")
+				.append("\t\tThe final sheep, with the wolf inside.\n\n")
+				.append("\t-steg <algorithm>\n")
+				.append("\t\tThe steganographer. Must be LSB1, LSB4, LSB8 or LSBE.\n")
+				.append("\t\t[Default: LSB1]\n")
+				.append("\t-a <cipher>\n")
+				.append("\t\tThe cipher involved. Must be aes128, aes192, aes256 or des.\n")
+				.append("\t\t[Default: aes128]\n")
+				.append("\t-m <mode>\n")
+				.append("\t\tThe operating mode of the cipher. Must be ECB, CFB, OFB or CBC.\n")
+				.append("\t\t[Default: CBC]\n")
+				.append("\t-pass <password>\n")
+				.append("\t\tThe password for the cipher.\n")
+				.toString();
 		}
 	}

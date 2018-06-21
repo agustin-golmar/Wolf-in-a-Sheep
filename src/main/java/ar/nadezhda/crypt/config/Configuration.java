@@ -185,9 +185,8 @@
 						| IllegalAccessException
 						| IllegalArgumentException
 						| InvocationTargetException exception) {
-					exception.printStackTrace();
 					throw new PipelineBrokenException(
-						"Can't build the pipeline for encryption.");
+						Message.CANNOT_BUILD_ENCRYPTION);
 				}
 			}
 		}
@@ -208,31 +207,32 @@
 						| IllegalAccessException
 						| IllegalArgumentException
 						| InvocationTargetException exception) {
-					exception.printStackTrace();
 					throw new PipelineBrokenException(
-						"Can't build the pipeline for decryption.");
+						Message.CANNOT_BUILD_DECRYPTION);
 				}
 			}
 		}
 
 		@Override
 		public String toString() {
-			return new StringBuffer()
+			return new StringBuffer(512)
 					.append("Configuration:\n")
-					.append("\tSteganographer: ")
-					.append(steganographer)
-					.append("\n\tInput: ")
-					.append(inputFilename)
-					.append("\n\tCarrier: ")
+					.append("\tSteganographer : ")
+					.append(steganographer.get().getClass().getSimpleName())
+					.append("\n\t         Input : ")
+					.append(inputFilename == null? "{empty}" : inputFilename)
+					.append("\n\t       Carrier : ")
 					.append(carrierFilename)
-					.append("\n\tOutput: ")
+					.append("\n\t        Output : ")
 					.append(outputFilename)
-					.append("\n\tCipher: ")
-					.append(cipher)
-					.append("\n\tMode: ")
-					.append(mode)
-					.append("\n\tPassword: ")
-					.append(password)
+					.append("\n\t        Cipher : ")
+					.append(cipher.get().getDeclaringClass().getSimpleName())
+					.append("\n\t          Mode : ")
+					.append(mode.get().getName())
+					.append("\n\t       Padding : ")
+					.append(mode.get().getPadding())
+					.append("\n\t      Password : ")
+					.append(password == null? "{empty}" : "'" + password + "'")
 					.toString();
 		}
 	}

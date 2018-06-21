@@ -22,12 +22,13 @@
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
 	import ar.nadezhda.crypt.interfaces.RegisteredFlow;
+	import ar.nadezhda.crypt.support.Message;
 	import ar.nadezhda.crypt.support.Random;
 
 	public class EncryptedPipe<T extends RegisteredFlow>
 		implements Pipelinable<T, T> {
 
-		public static final int INPUT_BLOCKS = 512;
+		public static final int INPUT_BLOCKS = 1;
 
 		protected final Optional<IvParameterSpec> IV;
 		protected final Cipher cipher;
@@ -54,44 +55,57 @@
 			final ByteBuffer inputBlock = ByteBuffer
 					.allocate(INPUT_BLOCKS * cipher.getBlockSizeInBytes());
 			final ByteBuffer outputBlock = ByteBuffer
-					.allocate((INPUT_BLOCKS + 1) * cipher.getBlockSizeInBytes());
-			final long Δ = 4 + size;
+					.allocate((1 + INPUT_BLOCKS) * cipher.getBlockSizeInBytes());
 			return (T) new RegisteredFlow() {
 
 				// Effectively-final hack:
 				protected final MutableLong remaining = new MutableLong(size);
 				protected final MutableBoolean available = new MutableBoolean(false);
+				protected final MutableLong index = new MutableLong(4);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
 					if (available.isTrue()) {
-						drainer.drain(Δ - remaining.getAndDecrement(), outputBlock.get());
+						drainer.drain(index.getAndIncrement(), outputBlock.get());
 						if (!outputBlock.hasRemaining()) available.setFalse();
 					}
 					else if (sizeBuffer.hasRemaining()) {
 						final int k = sizeBuffer.position();
 						drainer.drain(k, sizeBuffer.get());
 					}
-					else if (!flow.isExhausted()) {
-						flow.consume((k, payload) -> inputBlock.put(payload));
+					else if (0 < remaining.longValue()) {
+						flow.consume((k, p) -> {
+							inputBlock.put(p);
+							remaining.decrement();
+						});
 					}
 					if (available.isFalse()) {
 						final boolean inputIsFull = !inputBlock.hasRemaining();
-						final boolean lastBytes = flow.isExhausted() && 0 < inputBlock.position();
+						final boolean lastBytes = remaining.longValue() == 0
+								&& 0 < inputBlock.position();
 						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
 							try {
-								if (inputIsFull) cipher.transform(inputBlock, outputBlock);
-								else cipher.transformLast(inputBlock, outputBlock);
+								if (inputIsFull) {
+									cipher.transform(inputBlock, outputBlock);
+									/**/System.out.println("\tInput is Full: " + outputBlock);
+								}
+								else {
+									cipher.transformLast(inputBlock, outputBlock);
+									/**/System.out.println("\tLast Bytes:    " + outputBlock);
+								}
 								outputBlock.flip();
 								available.setTrue();
 							}
+							catch (final IllegalBlockSizeException exception) {
+								throw new ExhaustedFlowException(
+									Message.INVALID_CIPHER_MODE);
+							}
 							catch (final ShortBufferException
-									| IllegalBlockSizeException
 									| BadPaddingException exception) {
-								exception.printStackTrace();
+								throw new ExhaustedFlowException(exception.getMessage());
 							}
 							inputBlock.clear();
 						}
@@ -101,12 +115,13 @@
 				@Override
 				public boolean isExhausted() {
 					return remaining.longValue() == 0
-							&& !sizeBuffer.hasRemaining();
+								&& !sizeBuffer.hasRemaining()
+								&& available.isFalse();
 				}
 
 				@Override
 				public long getSize() {
-					return Δ;
+					return 4 + size;
 				}
 
 				@Override

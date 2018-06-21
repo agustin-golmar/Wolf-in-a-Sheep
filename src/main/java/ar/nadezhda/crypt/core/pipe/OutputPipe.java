@@ -6,8 +6,8 @@
 	import java.nio.channels.FileChannel;
 	import java.nio.file.FileSystemException;
 	import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
+	import java.nio.file.InvalidPathException;
+	import java.nio.file.Path;
 	import java.nio.file.Paths;
 	import java.nio.file.StandardCopyOption;
 	import java.nio.file.StandardOpenOption;
@@ -94,7 +94,6 @@ import java.nio.file.Path;
 						}
 						catch (final IOException
 								| InvalidPathException exception) {
-							exception.printStackTrace();
 							throw new ExhaustedFlowException(
 								Message.CANNOT_GENERATE_FILE_WITH_EXTENSION(
 									flow.toString()));

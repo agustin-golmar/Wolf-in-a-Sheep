@@ -22,6 +22,7 @@
 	import ar.nadezhda.crypt.interfaces.Drainer;
 	import ar.nadezhda.crypt.interfaces.Flow;
 	import ar.nadezhda.crypt.interfaces.Pipelinable;
+	import ar.nadezhda.crypt.support.Message;
 	import ar.nadezhda.crypt.support.Random;
 
 	public class DecryptedPipe<T extends Flow>
@@ -49,86 +50,64 @@
 			final ByteBuffer inputBlock = ByteBuffer
 					.allocate(EncryptedPipe.INPUT_BLOCKS * cipher.getBlockSizeInBytes());
 			final ByteBuffer outputBlock = ByteBuffer
-					.allocate(EncryptedPipe.INPUT_BLOCKS * cipher.getBlockSizeInBytes());
-			/**/System.out.println(sizeBuffer);
+					.allocate((1 + EncryptedPipe.INPUT_BLOCKS) * cipher.getBlockSizeInBytes());
 			return (T) new Flow() {
 
 				// Effectively-final hack:
 				protected final MutableLong remaining = new MutableLong(-1);
-				protected final MutableLong size = new MutableLong(0);
-				//protected final MutableBoolean loaded = new MutableBoolean(false);
 				protected final MutableBoolean available = new MutableBoolean(false);
 				protected final MutableLong index = new MutableLong(0);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
-					flow.consume((k, p) -> { // Meter adentro!						<---- !!!
-						if (available.isTrue()) {
-							//remaining.decrement();
-							final byte b = outputBlock.get();
-							//System.out.println("Hola!");
-							//System.out.print((char) b);
-							drainer.drain(index.getAndIncrement(), b);	// Desencriptado!!!
-							if (!outputBlock.hasRemaining()) available.setFalse();
-						}
-						else if (0 < remaining.longValue()) { // Encriptados!!!
-							//drainer.drain(k - 4 - ivSize, p); // WTF? Sigo con el resto...
+					if (available.isTrue()) {
+						drainer.drain(index.getAndIncrement(), outputBlock.get());
+						if (!outputBlock.hasRemaining()) available.setFalse();
+					}
+					else if (0 < remaining.longValue()) {
+						flow.consume((k, p) -> {
 							inputBlock.put(p);
 							remaining.decrement();
-						}
-						else if (sizeBuffer.hasRemaining()) { // Debería ser 144 (el original es 132)
-							sizeBuffer.put(p);
-						}
-						else if (remaining.longValue() < 0) { // Después de que se cargue el size y el iv...
-							sizeBuffer.flip();
-							remaining.setValue(sizeBuffer.getInt());
-							size.setValue(remaining.longValue());
-							//System.out.println("Size charged: " + ivBuffer);
-							/**/System.out.println("Size: " + size.longValue());
-							if (0 < remaining.longValue()) {
-								inputBlock.put(p);
-								//drainer.drain(k - 4 - ivSize, p); // WTF? Para no perder el primero!
-								remaining.decrement();
+						});
+					}
+					else if (sizeBuffer.hasRemaining()) {
+						flow.consume((k, p) -> sizeBuffer.put(p));
+					}
+					else if (remaining.longValue() < 0) {
+						sizeBuffer.flip();
+						remaining.setValue(sizeBuffer.getInt());
+					}
+					if (available.isFalse()) {
+						final boolean inputIsFull = !inputBlock.hasRemaining();
+						final boolean lastBytes = remaining.longValue() == 0
+								&& 0 < inputBlock.position();
+						if (inputIsFull || lastBytes) {
+							inputBlock.flip();
+							outputBlock.clear();
+							try {
+								if (inputIsFull) cipher.transform(inputBlock, outputBlock);
+								else cipher.transformLast(inputBlock, outputBlock);
+								outputBlock.flip();
+								available.setTrue();
 							}
-						}
-						//else loaded.setTrue();
-						// Intento desencriptar:
-						if (available.isFalse()) {
-							final boolean inputIsFull = !inputBlock.hasRemaining();
-							final boolean lastBytes = remaining.longValue() == 0 && 0 < inputBlock.position();
-								/*flow.isExhausted()*/
-							if (inputIsFull || lastBytes) {
-								System.out.println("0 - Input: " + inputBlock);
-								System.out.println("0 - Output: " + outputBlock);
-								inputBlock.flip();
-								outputBlock.clear();
-								System.out.println("1 - Input: " + inputBlock);
-								System.out.println("1 - Output: " + outputBlock);
-								try {
-									System.out.println("(inputIsFull, lastBytes) = (" + inputIsFull + ", " + lastBytes + ")");
-									if (inputIsFull) cipher.transform(inputBlock, outputBlock);
-									else cipher.transformLast(inputBlock, outputBlock);
-									outputBlock.flip();
-									available.setTrue();
-									System.out.println("2 - Input: " + inputBlock);
-									System.out.println("2 - Output: " + outputBlock + "\n");
-								}
-								catch (final ShortBufferException
-										| IllegalBlockSizeException
-										| BadPaddingException exception) {
-									exception.printStackTrace();
-								}
-								inputBlock.clear();
+							catch (final IllegalBlockSizeException exception) {
+								throw new ExhaustedFlowException(
+									Message.INVALID_CIPHER_MODE);
 							}
+							catch (final ShortBufferException
+									| BadPaddingException exception) {
+								throw new ExhaustedFlowException(exception.getMessage());
+							}
+							inputBlock.clear();
 						}
-					});
+					}
 				}
 
 				@Override
-				public boolean isExhausted() { // Revisar!
+				public boolean isExhausted() {
 					return flow.isExhausted()
-							|| (remaining.longValue() == 0 && available.isFalse());//loaded.isTrue());
+							|| (remaining.longValue() == 0 && available.isFalse());
 				}
 			};
 		}

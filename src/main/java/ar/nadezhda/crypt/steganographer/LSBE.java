@@ -44,8 +44,8 @@
 				}
 				catch (final IOException exception) {
 					availableSpace = Long.MAX_VALUE;
-					System.out.println(Message.CANNOT_GET_AVAILABLE_SPACE);
-					exception.printStackTrace();
+					System.err.println(exception.getMessage());
+					System.err.println(Message.CANNOT_GET_AVAILABLE_SPACE);
 				}
 			}
 			return availableSpace;

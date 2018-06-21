@@ -3,6 +3,7 @@
 
 	import java.util.function.Predicate;
 
+	import org.apache.commons.lang3.mutable.MutableBoolean;
 	import org.apache.commons.lang3.mutable.MutableByte;
 	import org.apache.commons.lang3.mutable.MutableInt;
 	import org.apache.commons.lang3.mutable.MutableLong;
@@ -61,7 +62,7 @@
 					return new MergedFlow(payload, flow);
 				}
 				catch (final NonMergeableFlowException exception) {
-					System.out.println(exception.getMessage());
+					System.err.println(exception.getMessage());
 					return new EmptyFlow();
 				}
 			};
@@ -74,7 +75,7 @@
 			protected final MutableInt remain = new MutableInt(HIDING_FACTOR - 1);
 			protected final MutableLong ek = new MutableLong(0);
 
-			protected final Flow payload;
+			protected final BoundedFlow payload;
 			protected final BoundedFlow carrier;
 
 			public MergedFlow(final BoundedFlow payload, final RegisteredFlow carrier)
@@ -99,18 +100,35 @@
 						return;
 					}
 					final long shift = ek.longValue() % HIDING_FACTOR;
-					final boolean exhausted = payload.isExhausted();
+					boolean exhausted = payload.isExhausted();
 					if (shift == 0) {
-						if (!exhausted) {
+						//System.out.println("ENTER WHILE");
+						while (!exhausted) {
 							try {
+								//System.out.println("Payload Size: " + payload.getSize());
+								/*
+								 * Siempre se llama a este método pero el byte retornado no cambia necesariamente,
+								 * solo en los límites de un bloque...
+								*/
+								final MutableBoolean loaded = new MutableBoolean(false);
 								payload.consume((kp, pp) -> {
 									target.setValue(pp);
+									loaded.setTrue();
+									//System.out.println("\tTarget LSB (" + kp + "): " + pp);
+									//System.out.println("\tExhausted: " + payload.isExhausted());
 								});
+								if (loaded.isTrue()) break;
+								else exhausted = payload.isExhausted();
 							}
 							catch (final ExhaustedFlowException ignored) {
 								// Ya se controla más arriba.
+								//System.out.println("EXCEPTION");
+								//ignored.printStackTrace();
+								exhausted = true;
 							}
+							//System.out.println(".");
 						}
+						//System.out.println("LEAVE WHILE.\n");
 					}
 					if (exhausted && 0 == remain.intValue()) {
 						drainer.drain(k, p);
