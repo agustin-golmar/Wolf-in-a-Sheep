@@ -28,7 +28,7 @@
 	public class EncryptedPipe<T extends RegisteredFlow>
 		implements Pipelinable<T, T> {
 
-		public static final int INPUT_BLOCKS = 1;
+		public static final int INPUT_BLOCKS = 1;				// Volver a 512
 
 		protected final Optional<IvParameterSpec> IV;
 		protected final Cipher cipher;

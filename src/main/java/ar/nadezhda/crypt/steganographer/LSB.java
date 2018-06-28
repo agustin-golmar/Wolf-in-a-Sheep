@@ -3,7 +3,6 @@
 
 	import java.util.function.Predicate;
 
-	import org.apache.commons.lang3.mutable.MutableBoolean;
 	import org.apache.commons.lang3.mutable.MutableByte;
 	import org.apache.commons.lang3.mutable.MutableInt;
 	import org.apache.commons.lang3.mutable.MutableLong;
@@ -100,35 +99,18 @@
 						return;
 					}
 					final long shift = ek.longValue() % HIDING_FACTOR;
-					boolean exhausted = payload.isExhausted();
+					final boolean exhausted = payload.isExhausted();
 					if (shift == 0) {
-						//System.out.println("ENTER WHILE");
-						while (!exhausted) {
+						if (!exhausted) {
 							try {
-								//System.out.println("Payload Size: " + payload.getSize());
-								/*
-								 * Siempre se llama a este método pero el byte retornado no cambia necesariamente,
-								 * solo en los límites de un bloque...
-								*/
-								final MutableBoolean loaded = new MutableBoolean(false);
 								payload.consume((kp, pp) -> {
 									target.setValue(pp);
-									loaded.setTrue();
-									//System.out.println("\tTarget LSB (" + kp + "): " + pp);
-									//System.out.println("\tExhausted: " + payload.isExhausted());
 								});
-								if (loaded.isTrue()) break;
-								else exhausted = payload.isExhausted();
 							}
 							catch (final ExhaustedFlowException ignored) {
 								// Ya se controla más arriba.
-								//System.out.println("EXCEPTION");
-								//ignored.printStackTrace();
-								exhausted = true;
 							}
-							//System.out.println(".");
 						}
-						//System.out.println("LEAVE WHILE.\n");
 					}
 					if (exhausted && 0 == remain.intValue()) {
 						drainer.drain(k, p);

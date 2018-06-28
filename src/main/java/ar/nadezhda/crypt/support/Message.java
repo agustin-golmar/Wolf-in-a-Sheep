@@ -21,7 +21,7 @@
 		public static final String A_DESC
 			= "The cipher involved. Must be 'aes128', 'aes192', 'aes256' or 'des'.";
 		public static final String M_DESC
-			= "The operating mode of the cipher. Must be 'ecb', 'cfb', 'ofb' or 'cbc'.";
+			= "The operating mode of the cipher. Must be 'ecb', 'cfb', 'ofb', 'ctr' or 'cbc'.";
 		public static final String PASS_DESC
 			= "The password for the cipher.";
 
@@ -137,7 +137,7 @@
 				.append("\t\tThe cipher involved. Must be aes128, aes192, aes256 or des.\n")
 				.append("\t\t[Default: aes128]\n")
 				.append("\t-m <mode>\n")
-				.append("\t\tThe operating mode of the cipher. Must be ECB, CFB, OFB or CBC.\n")
+				.append("\t\tThe operating mode of the cipher. Must be ECB, CFB, OFB, CTR or CBC.\n")
 				.append("\t\t[Default: CBC]\n")
 				.append("\t-pass <password>\n")
 				.append("\t\tThe password for the cipher.\n")

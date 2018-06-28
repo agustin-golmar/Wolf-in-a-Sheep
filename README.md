@@ -45,7 +45,7 @@ hidden wolf ready for extraction.
 * `-out`: The final sheep, with the wolf inside.
 * `-steg`: The steganographer. Must be _LSB1_, _LSB4_, _LSB8_ or _LSBE_.
 * `-a`: The cipher involved. Must be _aes128_, _aes192_, _aes256_ or _des_.
-* `-m`: The operating mode of the cipher. Must be _ecb_, _cfb_, _ofb_ or _cbc_.
+* `-m`: The operating mode of the cipher. Must be _ecb_, _cfb_, _ofb_, _cbc_ or _ctr_.
 * `-pass`: The password for the cipher.
 
 By default, `stegobmp` will:
@@ -56,12 +56,25 @@ By default, `stegobmp` will:
 * Use an _OpenSSL_-like [EVP_BytesToKey](https://www.openssl.org/docs/man1.1.0/crypto/EVP_BytesToKey.html)
 algorithm for key and IV deterministic derivation.
 * Use _PKCS5_ as the wolf-padding mechanism (only for _ECB_ and _CBC_ mode).
-* Use 8-bits feedback mode in _CFB_, and 128-bits in _OFB_.
+* Use 8-bits feedback mode in _CFB_, and 128-bits in _OFB_ and _CTR_.
 
 > __NOTE:__ If you wish to encrypt with larger keys for _AES_ cipher (_i.e._,
 > 192 or 256 bits), you must install the [Java Cryptography Extension (JCE)
 > Unlimited Strength Jurisdiction Policy Files 8](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html).
 > This way, you can run the cipher with every key-length desired.
+
+## Final Solver
+
+The solver is a script for __\*nix__ environments that downloads a set of 4
+_stego objects_ and apply an extraction process. You can run it in the root
+of the repository with:
+
+```
+$ chmod 500 solver.sh
+$ ./solver.sh <folder>
+```
+
+Where _\<folder\>_ is the name of the folder where to extract the solutions.
 
 ## Libraries
 
