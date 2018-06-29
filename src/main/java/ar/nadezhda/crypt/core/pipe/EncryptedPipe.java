@@ -56,9 +56,6 @@
 					.allocate(INPUT_BLOCKS * cipher.getBlockSizeInBytes());
 			final ByteBuffer outputBlock = ByteBuffer
 					.allocate((1 + INPUT_BLOCKS) * cipher.getBlockSizeInBytes());
-			// Imprimir elt amaño final del payload:
-			System.out.println("Size Payload: " + (size + 4));
-			System.out.println("Real Size: " + flow.getSize());
 			return (T) new RegisteredFlow() {
 
 				// Effectively-final hack:
@@ -89,36 +86,19 @@
 						});
 					}
 					if (available.isFalse() && finish.isFalse()) {
-						System.out.println(">>> Bytes remaining: " + remaining.longValue());
-						System.out.println(">>> InputBlock hasRemaining?: " + inputBlock.hasRemaining());
-						System.out.println(">>> Payload isExhausted?: " + flow.isExhausted());
-
-						final boolean inputIsFull = 0 < remaining.longValue() && !inputBlock.hasRemaining();
-						// Y si nunca hay lastBytes? Ver ECB, CBC.
-						// Esto no detecta lastBytes cuando hay múltiplo de bloques...
-						/*
-						 * Actualmente lod etecta si:
-						 *		No hay más buffer que consumir
-						 *		El inputBlock tiene bytes (esto falla)
-						*/
-						final boolean lastBytes = flow.isExhausted();//remaining.longValue() == 0
-								//&& 0 < inputBlock.position();
-						System.out.println(">>> inputIsFull?: " + inputIsFull);
-						System.out.println(">>> lastBytes?: " + lastBytes + "\n");
-
+						final boolean inputIsFull = 0 < remaining.longValue()
+								&& !inputBlock.hasRemaining();
+						final boolean lastBytes = flow.isExhausted();
 						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
 							try {
 								if (inputIsFull) {
 									cipher.transform(inputBlock, outputBlock);
-									/**/System.out.println("\tInput is Full: " + outputBlock);
 								}
 								else {
 									lastBlock.setTrue();
 									cipher.transformLast(inputBlock, outputBlock);
-									/**/System.out.println("\tLast Bytes:    " + outputBlock);
-									System.out.println("\n\n\n\n\n\n\n\n");
 								}
 								outputBlock.flip();
 								available.setTrue();
@@ -138,10 +118,7 @@
 
 				@Override
 				public boolean isExhausted() {
-					return (flow.isExhausted() && finish.isTrue());
-						/*|| (remaining.longValue() == 0
-								&& !sizeBuffer.hasRemaining()
-								&& available.isFalse());*/
+					return flow.isExhausted() && finish.isTrue();
 				}
 
 				@Override

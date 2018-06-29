@@ -84,34 +84,22 @@
 						remaining.setValue(sizeBuffer.getInt());
 					}
 					if (available.isFalse() && finish.isFalse()) {
-						System.out.println(">>> Bytes remaining: " + remaining.longValue());
-						System.out.println(">>> InputBlock hasRemaining?: " + inputBlock.hasRemaining());
-						System.out.println(">>> Payload isExhausted?: " + flow.isExhausted());
-						final boolean inputIsFull =  0 < remaining.longValue() && !inputBlock.hasRemaining();
-						final boolean lastBytes = remaining.longValue() == 0;//flow.isExhausted();
-						System.out.println(">>> inputIsFull?: " + inputIsFull);
-						System.out.println(">>> lastBytes?: " + lastBytes + "\n");
+						final boolean inputIsFull =  0 < remaining.longValue()
+								&& !inputBlock.hasRemaining();
+						final boolean lastBytes = remaining.longValue() == 0;
 						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
 							try {
 								if (inputIsFull) {
-									System.out.println("INPUT IS FULL: " + inputBlock);
 									cipher.transform(inputBlock, outputBlock);
 								}
 								else {
-									System.out.println("LAST BLOCK! Flow is exhausted!");
 									lastBlock.setTrue();
 									cipher.transformLast(inputBlock, outputBlock);
 								}
 								outputBlock.flip();
-								System.out.println("DECRYPTED output: " + outputBlock);
 								if (outputBlock.hasRemaining()) available.setTrue();
-								else {
-									System.out.println("NEVER!!");
-									finish.setTrue();
-									while(true);
-								}
 							}
 							catch (final IllegalBlockSizeException exception) {
 								throw new ExhaustedFlowException(
@@ -128,9 +116,7 @@
 
 				@Override
 				public boolean isExhausted() {
-					return (flow.isExhausted() && finish.isTrue());
-					/*return flow.isExhausted()
-							|| (remaining.longValue() == 0 && available.isFalse());*/
+					return flow.isExhausted() && finish.isTrue();
 				}
 			};
 		}

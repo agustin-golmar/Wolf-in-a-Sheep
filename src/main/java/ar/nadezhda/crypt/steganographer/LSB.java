@@ -3,9 +3,8 @@
 
 	import java.util.function.Predicate;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableByte;
-	import org.apache.commons.lang3.mutable.MutableInt;
+	import org.apache.commons.lang3.mutable.MutableBoolean;
+	import org.apache.commons.lang3.mutable.MutableByte;
 	import org.apache.commons.lang3.mutable.MutableLong;
 
 	import ar.nadezhda.crypt.core.exception.ExhaustedFlowException;
@@ -72,8 +71,8 @@ import org.apache.commons.lang3.mutable.MutableByte;
 
 			// Effectively-final hack:
 			protected final MutableByte target = new MutableByte(0);
-			protected final MutableInt remain = new MutableInt(HIDING_FACTOR - 1);
 			protected final MutableLong ek = new MutableLong(0);
+			protected final MutableBoolean available = new MutableBoolean(false);
 
 			protected final BoundedFlow payload;
 			protected final BoundedFlow carrier;
@@ -89,36 +88,10 @@ import org.apache.commons.lang3.mutable.MutableByte;
 				}
 			}
 
-			protected final MutableBoolean available = new MutableBoolean(false);
-
 			@Override
 			public void consume(final Drainer drainer)
 					throws ExhaustedFlowException {
-				/* [FLUJO DIRECTO]
-				 * Consumir 1 byte del carrier hasta que quede vacío.
-				 * Si no hay que usarlo se forwardea.
-				 * Si hay que usarlo se computa el shifting.
-				 * Se verifica que el payload se haya enviado o no.
-				 *		En esta instancia, no siempre se lee algo del payload.
-				 * Si no se envió, se lee otro byte del payload.
-				 * Se oculta el byte y se forwardea.
-				 * 
-				 */
-				/* [FLUJO INVERTIDO]
-				 * Se consume el payload si se necesita.
-				 * Si no hay nada no se hace nada.
-				 * Si hay algo se procede con LSB.
-				 * Si el payload queda exhausto, se continúa a descargar el carrier.
-				 */
-				// HIDING_FACTOR = 1 (cantidad de bytes de carrier por payload)
-				// target = 0
-				// remain = HIDING_FACTOR - 1 = 0 (LSB8)
-				// ek = 0 (effective k, es decir, sin el header de 54 bytes)
-
-				// Manejar el remain! No hay filtro del header!
 				if (available.isTrue()) {
-					System.out.println("available.isTrue()");
-					// target tiene un byte que no fue consumido por completo
 					final long shift = ek.longValue() % HIDING_FACTOR;
 					final byte hiding = (byte) (target.byteValue() >> (MAX_SHIFT - shift * SHIFT_FACTOR));
 					carrier.consume((k, p) -> {
@@ -128,83 +101,24 @@ import org.apache.commons.lang3.mutable.MutableByte;
 							drainer.drain(k, p);
 							return;
 						}
-						System.out.println("\tcarrier.consume(...)");
 						drainer.drain(k, (byte) ((p & MASK) | (hiding & HIDING_MASK)));
 						ek.increment();
-
-						// Ya lo enviamos. Es cierto solo en LSB8.
-						if (shift == HIDING_FACTOR - 1) {
-							available.setFalse();
-							System.out.println("Last Shift: " + shift);
-						}
-						else {
-							System.out.println("Shift: " + shift);
-						}
+						if (shift == HIDING_FACTOR - 1) available.setFalse();
 					});
 				}
 				else {
-					//System.out.println("available.isFalse()");
-					// Se necesita más payload...
 					if (!payload.isExhausted()) {
 						payload.consume((kp, pp) -> {
-							System.out.println("\tpayload.consume(" + kp + ", " + pp + ")");
 							target.setValue(pp);
 							available.setTrue();
 						});
 					}
 					else {
-						//System.out.println("PAYLOAD EXHAUSTED!!! Go with the rest!");
-						//System.out.println("\tpayload.isExhausted!");
-						// No hay más payload! Consumo lo que queda del carrier...
 						carrier.consume((k, p) -> {
 							drainer.drain(k, p);
 						});
 					}
 				}
-				/*carrier.consume((k, p) -> {
-					if (!filter.test(p) || k < BitmapFlow.HEADER_SIZE) {
-						// Se debería poder ignorar cierta parte (pero
-						// dejar que pase), en lugar de hacer esto...
-						drainer.drain(k, p);
-						return;
-					}
-					final long shift = ek.longValue() % HIDING_FACTOR;
-					final boolean exhausted = payload.isExhausted();
-					System.out.println("ENTER: isExhausted? : " + payload.isExhausted());
-					if (shift == 0) {
-						if (!exhausted) {
-							// Necesito más payload y todavía hay disponible!
-							// Como hay disponible, le puedo pedir hasta que me lo de.
-							// ...
-							try {
-								final MutableBoolean newByte = new MutableBoolean(false);
-								while (newByte.isFalse()) {
-									payload.consume((kp, pp) -> {
-										target.setValue(pp);
-										newByte.setTrue();
-									});
-									System.out.println("\tLoop...");
-									System.out.println("\t\tisExhausted? : " + payload.isExhausted());
-								}
-								System.out.println("Payload loaded! -> (" + target.byteValue() + ")");
-								System.out.println("\tisExhausted? : " + payload.isExhausted());
-								// Algo se cargó!
-							}
-							catch (final ExhaustedFlowException ignored) {
-								// Ya se controla más arriba.
-							}
-						}
-					}
-					if (exhausted && 0 == remain.intValue()) {
-						drainer.drain(k, p);
-					}
-					else {
-						if (exhausted) remain.decrement();
-						final byte hiding = (byte) (target.byteValue() >> (MAX_SHIFT - shift * SHIFT_FACTOR));
-						drainer.drain(k, (byte) ((p & MASK) | (hiding & HIDING_MASK)));
-					}
-					ek.increment();
-				});*/
 			}
 
 			@Override
