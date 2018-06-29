@@ -25,3 +25,4 @@ target/
 
 res/data/*
 !res/data/*.jpg
+!stegobmp.jar
