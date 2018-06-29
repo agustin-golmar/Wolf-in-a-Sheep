@@ -28,7 +28,7 @@
 	public class EncryptedPipe<T extends RegisteredFlow>
 		implements Pipelinable<T, T> {
 
-		public static final int INPUT_BLOCKS = 1;				// Volver a 512
+		public static final int INPUT_BLOCKS = 512;
 
 		protected final Optional<IvParameterSpec> IV;
 		protected final Cipher cipher;
@@ -56,19 +56,27 @@
 					.allocate(INPUT_BLOCKS * cipher.getBlockSizeInBytes());
 			final ByteBuffer outputBlock = ByteBuffer
 					.allocate((1 + INPUT_BLOCKS) * cipher.getBlockSizeInBytes());
+			// Imprimir elt amaño final del payload:
+			System.out.println("Size Payload: " + (size + 4));
+			System.out.println("Real Size: " + flow.getSize());
 			return (T) new RegisteredFlow() {
 
 				// Effectively-final hack:
-				protected final MutableLong remaining = new MutableLong(size);
+				protected final MutableLong remaining = new MutableLong(flow.getSize());
 				protected final MutableBoolean available = new MutableBoolean(false);
 				protected final MutableLong index = new MutableLong(4);
+				protected final MutableBoolean lastBlock = new MutableBoolean(false);
+				protected final MutableBoolean finish = new MutableBoolean(false);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
-					if (available.isTrue()) {
+					if (available.isTrue() || lastBlock.isTrue()) {
 						drainer.drain(index.getAndIncrement(), outputBlock.get());
-						if (!outputBlock.hasRemaining()) available.setFalse();
+						if (!outputBlock.hasRemaining()) {
+							if (lastBlock.isTrue()) finish.setTrue();
+							available.setFalse();
+						}
 					}
 					else if (sizeBuffer.hasRemaining()) {
 						final int k = sizeBuffer.position();
@@ -80,10 +88,24 @@
 							remaining.decrement();
 						});
 					}
-					if (available.isFalse()) {
-						final boolean inputIsFull = !inputBlock.hasRemaining();
-						final boolean lastBytes = remaining.longValue() == 0
-								&& 0 < inputBlock.position();
+					if (available.isFalse() && finish.isFalse()) {
+						System.out.println(">>> Bytes remaining: " + remaining.longValue());
+						System.out.println(">>> InputBlock hasRemaining?: " + inputBlock.hasRemaining());
+						System.out.println(">>> Payload isExhausted?: " + flow.isExhausted());
+
+						final boolean inputIsFull = 0 < remaining.longValue() && !inputBlock.hasRemaining();
+						// Y si nunca hay lastBytes? Ver ECB, CBC.
+						// Esto no detecta lastBytes cuando hay múltiplo de bloques...
+						/*
+						 * Actualmente lod etecta si:
+						 *		No hay más buffer que consumir
+						 *		El inputBlock tiene bytes (esto falla)
+						*/
+						final boolean lastBytes = flow.isExhausted();//remaining.longValue() == 0
+								//&& 0 < inputBlock.position();
+						System.out.println(">>> inputIsFull?: " + inputIsFull);
+						System.out.println(">>> lastBytes?: " + lastBytes + "\n");
+
 						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
@@ -93,8 +115,10 @@
 									/**/System.out.println("\tInput is Full: " + outputBlock);
 								}
 								else {
+									lastBlock.setTrue();
 									cipher.transformLast(inputBlock, outputBlock);
 									/**/System.out.println("\tLast Bytes:    " + outputBlock);
+									System.out.println("\n\n\n\n\n\n\n\n");
 								}
 								outputBlock.flip();
 								available.setTrue();
@@ -114,9 +138,10 @@
 
 				@Override
 				public boolean isExhausted() {
-					return remaining.longValue() == 0
+					return (flow.isExhausted() && finish.isTrue());
+						/*|| (remaining.longValue() == 0
 								&& !sizeBuffer.hasRemaining()
-								&& available.isFalse();
+								&& available.isFalse());*/
 				}
 
 				@Override

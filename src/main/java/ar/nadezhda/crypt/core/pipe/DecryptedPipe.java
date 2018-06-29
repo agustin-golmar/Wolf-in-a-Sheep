@@ -57,13 +57,18 @@
 				protected final MutableLong remaining = new MutableLong(-1);
 				protected final MutableBoolean available = new MutableBoolean(false);
 				protected final MutableLong index = new MutableLong(0);
+				protected final MutableBoolean lastBlock = new MutableBoolean(false);
+				protected final MutableBoolean finish = new MutableBoolean(false);
 
 				@Override
 				public void consume(final Drainer drainer)
 						throws ExhaustedFlowException {
-					if (available.isTrue()) {
+					if (available.isTrue() || lastBlock.isTrue()) {
 						drainer.drain(index.getAndIncrement(), outputBlock.get());
-						if (!outputBlock.hasRemaining()) available.setFalse();
+						if (!outputBlock.hasRemaining()) {
+							if (lastBlock.isTrue()) finish.setTrue();
+							available.setFalse();
+						}
 					}
 					else if (0 < remaining.longValue()) {
 						flow.consume((k, p) -> {
@@ -78,18 +83,35 @@
 						sizeBuffer.flip();
 						remaining.setValue(sizeBuffer.getInt());
 					}
-					if (available.isFalse()) {
-						final boolean inputIsFull = !inputBlock.hasRemaining();
-						final boolean lastBytes = remaining.longValue() == 0
-								&& 0 < inputBlock.position();
+					if (available.isFalse() && finish.isFalse()) {
+						System.out.println(">>> Bytes remaining: " + remaining.longValue());
+						System.out.println(">>> InputBlock hasRemaining?: " + inputBlock.hasRemaining());
+						System.out.println(">>> Payload isExhausted?: " + flow.isExhausted());
+						final boolean inputIsFull =  0 < remaining.longValue() && !inputBlock.hasRemaining();
+						final boolean lastBytes = remaining.longValue() == 0;//flow.isExhausted();
+						System.out.println(">>> inputIsFull?: " + inputIsFull);
+						System.out.println(">>> lastBytes?: " + lastBytes + "\n");
 						if (inputIsFull || lastBytes) {
 							inputBlock.flip();
 							outputBlock.clear();
 							try {
-								if (inputIsFull) cipher.transform(inputBlock, outputBlock);
-								else cipher.transformLast(inputBlock, outputBlock);
+								if (inputIsFull) {
+									System.out.println("INPUT IS FULL: " + inputBlock);
+									cipher.transform(inputBlock, outputBlock);
+								}
+								else {
+									System.out.println("LAST BLOCK! Flow is exhausted!");
+									lastBlock.setTrue();
+									cipher.transformLast(inputBlock, outputBlock);
+								}
 								outputBlock.flip();
-								available.setTrue();
+								System.out.println("DECRYPTED output: " + outputBlock);
+								if (outputBlock.hasRemaining()) available.setTrue();
+								else {
+									System.out.println("NEVER!!");
+									finish.setTrue();
+									while(true);
+								}
 							}
 							catch (final IllegalBlockSizeException exception) {
 								throw new ExhaustedFlowException(
@@ -106,8 +128,9 @@
 
 				@Override
 				public boolean isExhausted() {
-					return flow.isExhausted()
-							|| (remaining.longValue() == 0 && available.isFalse());
+					return (flow.isExhausted() && finish.isTrue());
+					/*return flow.isExhausted()
+							|| (remaining.longValue() == 0 && available.isFalse());*/
 				}
 			};
 		}

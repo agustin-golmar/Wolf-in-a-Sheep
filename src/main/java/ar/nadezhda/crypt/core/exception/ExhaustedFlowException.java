@@ -7,6 +7,7 @@
 
 		public ExhaustedFlowException(final String message) {
 			super(Message.EXHAUSTED_FLOW_EXCEPTION(message));
+			printStackTrace();
 		}
 
 		private static final long serialVersionUID
