@@ -1,6 +1,6 @@
 [![...](res/image/readme-header.bmp)](https://img.shields.io/badge/Password-fuckyou-red.svg)
 [![...](https://img.shields.io/badge/license-WTFPL%20v2.0-red.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/blob/master/LICENSE.md)
-[![...](https://img.shields.io/badge/release-v1.0-blue.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/releases)
+[![...](https://img.shields.io/badge/release-v1.0.1-blue.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/releases)
 [![...](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep.svg?branch=master)](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep)
 
 # Wolf in a Sheep
@@ -65,7 +65,7 @@ algorithm for key and IV deterministic derivation.
 
 ## Final Solver
 
-The solver is a script for __\*nix__ environments that downloads a set of 4
+The solver is a script for __\*nix__ environments that unzips a set of 4
 _stego objects_ and apply an extraction process. You can run it in the root
 of the repository with:
 

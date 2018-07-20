@@ -12,12 +12,8 @@
 	# Construir carpeta:
 	mkdir "$TARGET"
 
-	# Obtener imágenes esteganografiadas desde Google Drive:
-	wget 'https://drive.google.com/uc?export=download&id=1h3z8w_ZcTGrVwmXN98RBDL2rCU5LEBfL' \
-			-O "$1/images.zip"
-
 	# Descomprimir imágenes a procesar:
-	unzip "$1/images.zip" -d "$1"
+	unzip "res/data/images.zip" -d "$1"
 
 	# Extraer la imagen PNG:
 	java -jar stegobmp.jar -extract \
