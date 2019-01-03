@@ -2,6 +2,7 @@
 [![...](https://img.shields.io/badge/license-WTFPL%20v2.0-red.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/blob/master/LICENSE.md)
 [![...](https://img.shields.io/badge/release-v1.0.1-blue.svg)](https://github.com/agustin-golmar/Wolf-in-a-Sheep/releases)
 [![...](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep.svg?branch=master)](https://www.travis-ci.com/agustin-golmar/Wolf-in-a-Sheep)
+[![Known Vulnerabilities](https://snyk.io/test/github/agustin-golmar/Wolf-in-a-Sheep/badge.svg?targetFile=pom.xml)](https://snyk.io/test/github/agustin-golmar/Wolf-in-a-Sheep?targetFile=pom.xml)
 
 # Wolf in a Sheep
 
